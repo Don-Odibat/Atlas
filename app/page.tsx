@@ -203,7 +203,7 @@ export default function GlobalCommandCenter() {
           <Link href="/policy" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Privacy</Link>
         </div>
         <div className="text-[8px] md:text-[9px] font-mono text-gray-500 font-bold tracking-widest uppercase">
-          Don Systems Holding - Don Odibat
+          2025 all right received Don Odibat - Don Systems Holding
         </div>
       </div>
 
@@ -260,13 +260,25 @@ export default function GlobalCommandCenter() {
                 }
             }}
             
-            htmlElementsData={nations}
+            // 🟢 PERFORMANCE STRIKE: WebGL GPU rendering for the 195 background countries
+            labelsData={nations}
+            labelLat="lat"
+            labelLng="lng"
+            labelText={(d: any) => selectedTarget && selectedTarget.name === d.name ? "" : d.name}
+            labelSize={0.6}
+            labelDotRadius={0.4}
+            labelColor={() => 'rgba(255, 255, 255, 0.7)'}
+            labelResolution={2}
+            onLabelClick={(d: any) => flyToTarget(d)}
+
+            // 🟢 PERFORMANCE STRIKE: Only render 1 single HTML element for the target
+            htmlElementsData={selectedTarget ? [selectedTarget] : []}
             htmlLat="lat"
             htmlLng="lng"
             htmlElement={(d: any) => {
               const isTarget = selectedTarget && selectedTarget.slug === d.slug;
               
-              // 🟢 The Cache System: Only create the heavy HTML once per country
+              // 🟢 The Cache System: Still completely intact, exactly as you locked it
               let el = elementsCache.current[d.slug];
               
               if (!el) {
