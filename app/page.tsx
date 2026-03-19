@@ -74,15 +74,15 @@ export default function GlobalCommandCenter() {
 
   useEffect(() => {
     fetch('https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson')
-      .then(res => res.json())
-      .then(geo => {
+      .then((res: any) => res.json())
+      .then((geo: any) => {
         const filteredFeatures = geo.features.filter((f: any) => f.properties.name !== "Israel");
         setWorldPolygons(filteredFeatures);
       });
 
     fetch("https://restcountries.com/v3.1/all?fields=name,latlng,cca2,flags,capital,population")
-      .then(res => res.json())
-      .then(data => {
+      .then((res: any) => res.json())
+      .then((data: any) => {
         const formatted = data
           .filter((c: any) => c.latlng?.length === 2 && c.name.common !== "Israel") 
           .map((c: any) => {
@@ -103,7 +103,7 @@ export default function GlobalCommandCenter() {
               flag: c.flags.svg,
               capital: c.capital && c.capital.length > 0 ? c.capital[0] : "N/A",
               population: new Intl.NumberFormat().format(c.population || 0),
-              searchTerms: aliases.map(a => a.toLowerCase())
+              searchTerms: aliases.map((a: string) => a.toLowerCase())
             };
           });
         setNations(formatted);
@@ -114,7 +114,6 @@ export default function GlobalCommandCenter() {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return [];
     
-    // 🟢 FIXED: Added (n: any) and (term: string) to satisfy Vercel's strict compiler
     return nations.filter((n: any) => 
         n.name.toLowerCase().startsWith(query) || 
         n.searchTerms.some((term: string) => term.startsWith(query)) || 
@@ -210,7 +209,7 @@ export default function GlobalCommandCenter() {
       <div className="fixed top-8 right-4 md:right-8 z-[100] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
         <div className="bg-black/60 border border-white/10 rounded-full flex items-center px-4 backdrop-blur-md shadow-lg pointer-events-auto">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 min-w-[16px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide" placeholder="Search a country..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setTimeout(() => setIsFocused(false), 200)} onKeyDown={(e) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])} />
+          <input type="text" className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide" placeholder="Search a country..." value={searchQuery} onChange={(e: any) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setTimeout(() => setIsFocused(false), 200)} onKeyDown={(e: any) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])} />
         </div>
         {searchQuery && isFocused && (
           <div className="mt-2 bg-black/90 border border-white/10 rounded-xl max-h-60 overflow-y-auto backdrop-blur-xl shadow-2xl pointer-events-auto">
@@ -241,8 +240,9 @@ export default function GlobalCommandCenter() {
             polygonSideColor={() => 'rgba(0, 0, 0, 0.4)'}
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.6)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : '#1e3a8a'}
+            polygonHoverColor={() => 'rgba(59, 130, 246, 0.3)'}
             onPolygonClick={(poly: any) => {
-                const target = nations.find(n => n.name === poly.properties.name);
+                const target = nations.find((n: any) => n.name === poly.properties.name);
                 if (target) {
                     if (selectedTarget && selectedTarget.name === target.name) navigateToDossier(target.slug);
                     else flyToTarget(target);
