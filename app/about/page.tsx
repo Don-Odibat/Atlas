@@ -1,85 +1,82 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import TrustFooter from "../../components/TrustFooter";
 
-export default function AboutUs() {
+export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-black text-gray-300 font-sans selection:bg-white/20 relative overflow-y-auto">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-blue-500/30">
       
-      {/* Background Ambience */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
-      </div>
-
-      {/* Top Navigation */}
-      <nav className="relative z-50 w-full px-8 md:px-12 pt-8 pb-4 flex justify-between items-center border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 shadow-2xl">
-        <Link href="/" className="text-[10px] font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
-          <span className="text-blue-500">←</span> Return to Mainframe
+      {/* TOP NAVIGATION BANNER */}
+      <nav className="w-full border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
+        <Link href="/" className="text-xl font-black tracking-tighter hover:text-blue-400 transition-colors">
+          EARTH<span className="text-blue-500">LOOKUP</span>
         </Link>
-        <h1 className="text-xl font-black tracking-tighter m-0 p-0 leading-none select-none text-white">
-            EARTH<span className="text-blue-500">LOOKUP</span>
-        </h1>
+        <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+          Intelligence Core / About
+        </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="relative z-10 max-w-4xl mx-auto p-8 md:p-16">
+      {/* MASSIVE CONTENT AREA */}
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-20 flex flex-col gap-16">
         
-        <header className="mb-16 border-b border-white/10 pb-8">
-          <p className="text-blue-500 font-black tracking-widest uppercase mb-4 text-sm">Platform Origin & Mission</p>
-          <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">About EarthLookup</h1>
-          <p className="text-gray-400 text-sm tracking-wide">The Global Intelligence Operating System</p>
+        <header className="text-center space-y-6">
+          <div className="inline-block bg-blue-900/30 border border-blue-500/50 text-blue-400 text-xs font-black uppercase tracking-[0.3em] px-4 py-2 rounded-full mb-4">
+            A Don Systems Holding Project
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
+            Exploring The <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Globe Together.</span>
+          </h1>
+          <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
+            Massive info in one place. Welcome to the ultimate geography encyclopedia designed for explorers, students, and data-driven minds.
+          </p>
         </header>
 
-        <article className="space-y-12 text-sm md:text-base leading-relaxed font-light">
-          
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">1. The Vision: Beyond the Encyclopedia</h2>
-            <p className="mb-4">
-              EarthLookup was engineered with a singular, uncompromising vision: to revolutionize how global intelligence is consumed. We believed that the traditional online encyclopedia model—endless walls of text, cluttered interfaces, and exhausting scrolling—was fundamentally obsolete for the modern researcher.
+        <section className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl backdrop-blur-sm">
+          <h2 className="text-2xl font-bold mb-6 text-blue-400 uppercase tracking-wider">The EarthLookup Mission</h2>
+          <div className="space-y-6 text-gray-300 leading-loose">
+            <p>
+              Built from the ground up by <strong>Don Odibat</strong> in Tupelo, MS, EarthLookup.com was engineered to be the single most powerful, interactive, and seamless way to understand our planet. We believe that global intelligence shouldn't be locked behind boring spreadsheets. It should be at your fingertips.
+            </p>
+            <p className="text-white font-medium text-lg border-l-4 border-blue-500 pl-4 py-2 bg-blue-500/10">
+              "Amazing for knowing the world and exploring the globe. Used by schools across the country for general geography info and advanced geopolitical research."
             </p>
             <p>
-              We built EarthLookup to act as a high-speed, university-grade Intelligence Operating System. It is designed to deliver extreme-density geopolitical, macroeconomic, and historical data instantly, utilizing a completely frictionless "Zero-Scroll" Heads-Up Display (HUD) architecture. 
+              Whether you are a teacher building a lesson plan, a student studying for an exam, or a developer looking for precise demographic data, EarthLookup condenses thousands of data points into one lightning-fast, 3D interactive experience.
             </p>
-          </section>
+          </div>
+        </section>
 
-          <section className="bg-white/5 border border-blue-500/30 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold text-blue-400 mb-4">2. The Architecture & Technology</h2>
-            <p className="mb-4 text-gray-300">
-              EarthLookup is not a standard website; it is an active data mainframe. To achieve supersonic load speeds and absolute precision, the platform integrates multiple cutting-edge systems:
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <section className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8">
+            <h2 className="text-xl font-bold mb-4 uppercase tracking-wider">The Don Systems Network</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              EarthLookup is proudly maintained by <strong>Don Systems Holding</strong>. We build tools that make the internet faster, safer, and more useful. Check out our sister platforms:
             </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li><strong>Live Telemetry:</strong> We utilize live global API endpoints (including RestCountries and Open-Meteo) to stream real-time demographic shifts, atmospheric conditions, and active currency exchange rates directly to the user.</li>
-              <li><strong>Zero-Scroll HUD:</strong> Information is categorized into strict tactical sectors (Macroeconomics, Security, History, etc.) that swap instantly via a locked-viewport interface, eliminating scroll fatigue.</li>
-              <li><strong>CSS Power Data:</strong> Deep economic and demographic metrics are rendered using native HTML/CSS visual power bars, ensuring instant data visualization with zero bandwidth cost.</li>
+            <ul className="space-y-3 font-mono text-sm">
+              <li>📍 <a href="https://tellmylocation.com" className="text-blue-400 hover:text-white transition-colors">TellMyLocation.com</a></li>
+              <li>🔊 <a href="https://waterinmyspeaker.com" className="text-blue-400 hover:text-white transition-colors">WaterInMySpeaker.com</a></li>
+              <li>📱 <a href="https://checkthisphone.com" className="text-blue-400 hover:text-white transition-colors">CheckThisPhone.com</a></li>
             </ul>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">3. University-Grade Intelligence</h2>
-            <p className="mb-4">
-              Our dossiers are crafted for academic, research, and geopolitical analysis. We refuse to take shortcuts. When you access a nation's mainframe on EarthLookup, you are not just given the capital city and the flag. 
+          <section className="bg-gradient-to-br from-blue-900/20 to-black border border-blue-500/20 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+            <h2 className="text-xl font-bold mb-4 uppercase tracking-wider text-white">Keep the Servers Running</h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Maintaining real-time global databases and HD 3D vectors requires massive server power. If EarthLookup helped you out, consider fueling the dev team.
             </p>
-            <p>
-              You receive a brutal, unfiltered breakdown of the nation's tectonic reality, its deeply entrenched military alliances (NATO, CSTO, Five Eyes), the exact realities of its economic infrastructure, and a comprehensive timeline of the conflicts and eras that forged its modern borders. It is designed specifically for schools, universities, and dedicated global citizens.
-            </p>
+            <a href="https://buymeacoffee.com/DonShehab" target="_blank" className="bg-[#FFDD00] text-black font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(255,221,0,0.3)] hover:scale-105 transition-transform">
+              Buy Don a Coffee ☕
+            </a>
           </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">4. The Humanitarian Initiative</h2>
-            <p className="mb-4">
-              EarthLookup is committed to looking beyond the data. We recognize that many of the nations in our database are currently enduring severe humanitarian crises, economic collapse, or active conflict.
-            </p>
-            <p>
-              As part of our core mission, EarthLookup serves as a verified bridge to global aid. For nations facing acute emergencies, the mainframe actively integrates direct, verified links to apolitical, internationally trusted non-profit organizations (such as UN agencies and Doctors Without Borders). Our goal is to convert global education directly into targeted, verifiable humanitarian support.
-            </p>
-          </section>
-
-        </article>
-
-        <footer className="mt-20 pt-8 border-t border-white/10 text-center">
-          <p className="text-gray-500 text-xs uppercase tracking-widest">EarthLookup Intelligence Systems © 2026. All Rights Reserved.</p>
-        </footer>
+        </div>
 
       </main>
+
+      {/* THE MASTER FOOTER WE JUST BUILT */}
+      <TrustFooter />
+      
     </div>
   );
 }
