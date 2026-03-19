@@ -1,107 +1,78 @@
+// @ts-nocheck
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import TrustFooter from "../../components/TrustFooter";
 
-export default function TermsOfService() {
+export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-black text-gray-300 font-sans selection:bg-white/20 relative overflow-y-auto">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-blue-500/30">
       
-      {/* Background Ambience */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
-      </div>
-
-      {/* Top Navigation */}
-      <nav className="relative z-50 w-full px-8 md:px-12 pt-8 pb-4 flex justify-between items-center border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 shadow-2xl">
-        <Link href="/" className="text-[10px] font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
-          <span className="text-blue-500">←</span> Return to Mainframe
+      {/* TOP NAVIGATION */}
+      <nav className="w-full border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
+        <Link href="/" className="text-xl font-black tracking-tighter hover:text-blue-400 transition-colors">
+          EARTH<span className="text-blue-500">LOOKUP</span>
         </Link>
-        <h1 className="text-xl font-black tracking-tighter m-0 p-0 leading-none select-none text-white">
-            EARTH<span className="text-blue-500">LOOKUP</span>
-        </h1>
+        <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+          Intelligence Core / Terms of Service
+        </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="relative z-10 max-w-4xl mx-auto p-8 md:p-16">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-20 flex flex-col gap-10">
         
-        <header className="mb-16 border-b border-white/10 pb-8">
-          <p className="text-blue-500 font-black tracking-widest uppercase mb-4 text-sm">Legal & Compliance</p>
-          <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Terms of Service & Disclaimer</h1>
-          <p className="text-gray-400 text-sm tracking-wide">Last Updated: March 2026 | Operational Guidelines</p>
+        <header className="border-b border-white/10 pb-10">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">Terms of Service</h1>
+          <div className="flex flex-col md:flex-row gap-4 text-xs font-mono text-gray-500 uppercase tracking-widest">
+            <span>Last Updated: March 19, 2026</span>
+            <span className="hidden md:inline">•</span>
+            <span>Operated by Don Systems Holding</span>
+          </div>
         </header>
 
-        <article className="space-y-12 text-sm md:text-base leading-relaxed font-light">
-          
+        <article className="prose prose-invert prose-blue max-w-none text-gray-300 leading-relaxed space-y-8">
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
-            <p className="mb-4">
-              By accessing and utilizing the EarthLookup intelligence mainframe (the "Service"), you accept and agree to be bound by the terms and provisions of this agreement. Furthermore, when using this Service's specific data endpoints, you shall be subject to any posted guidelines or rules applicable to such services. 
-            </p>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-4">1. Acceptance of Terms</h2>
             <p>
-              Any participation in this Service will constitute acceptance of this agreement. If you do not agree to abide by the above, please disconnect from the mainframe and exit the application immediately.
+              By accessing and using <strong>EarthLookup.com</strong>, a digital asset owned and operated by Don Systems Holding ("Company", "we", "us", or "our"), you accept and agree to be bound by the terms and provision of this agreement. 
             </p>
           </section>
 
-          <section className="bg-white/5 border border-blue-500/30 p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-bold text-blue-400 mb-4">2. Educational Purpose & Data Accuracy Disclaimer</h2>
-            <p className="mb-4 text-gray-300">
-              EarthLookup is designed strictly as a high-density educational tool for students, researchers, and global citizens. While we strive to provide university-grade intelligence and utilize live API endpoints for macroeconomic and meteorological data, <strong>we do not guarantee absolute real-time accuracy.</strong>
+          <section>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-4">2. Educational & Informational Use</h2>
+            <p>
+              EarthLookup is designed to be <em>amazing for knowing the world and exploring the globe</em>. It is heavily used by schools, educators, and students for general geography info. All intelligence, demographics, and geopolitical borders provided are for educational and informational purposes only. We compile massive info into one place, but do not guarantee real-time accuracy of every metric.
             </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-300">
-              <li>Information provided regarding national borders, economic metrics, military rankings, and historical events is for informational purposes only.</li>
-              <li>EarthLookup must <strong>not</strong> be used for official diplomatic, legal, financial, or navigational reliance.</li>
-              <li>Live data streams (such as currency exchange rates and weather) are provided "as is" via third-party APIs and may experience latency or outages.</li>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-4">3. The Don Systems Network</h2>
+            <p>
+              These terms apply strictly to EarthLookup.com. If you visit other applications within our network, such as TellMyLocation.com, WaterInMySpeaker.com, or CheckThisPhone.com, you are subject to their specific terms of service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-4">4. Intellectual Property</h2>
+            <p>
+              All branding, logos, custom code, and unique UI/UX designs are the exclusive property of Don Odibat and Don Systems Holding. The underlying geographic data is sourced from public API directories. 
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white uppercase tracking-wider mb-4 border-l-4 border-blue-500 pl-4">5. Contact Information</h2>
+            <p>If you have any questions regarding these Terms, please contact us at:</p>
+            <ul className="list-none mt-4 font-mono bg-white/5 p-6 rounded-lg border border-white/10">
+              <li>Don Systems Holding</li>
+              <li>Tupelo, MS USA 38801</li>
+              <li className="text-blue-400 mt-2">don.odibat@gmail.com</li>
             </ul>
           </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">3. Geopolitical Neutrality & Historical Sensitivity</h2>
-            <p className="mb-4">
-              Our dossiers cover the complex, and often violent, history of human civilization. We document historical conflicts, border disputes, decolonization, and modern geopolitical realities. 
-            </p>
-            <p>
-              EarthLookup maintains a stance of strict geopolitical neutrality. The inclusion of specific historical events, terminology, or territorial lines is intended solely to reflect the current, prevailing international consensus and historical record. It does not constitute a political endorsement of any specific government, regime, or territorial claim.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">4. Third-Party Links & Humanitarian Non-Profits</h2>
-            <p className="mb-4">
-              EarthLookup may occasionally feature links to external, third-party websites, including verified non-profit organizations and international NGOs operating in global crisis zones. 
-            </p>
-            <p>
-              While we curate these links to direct users to globally recognized organizations (e.g., United Nations agencies, Doctors Without Borders), EarthLookup has no control over, and assumes no responsibility for, the content, privacy policies, or practices of any third-party sites or services. Users who choose to navigate to these sites or make financial donations do so entirely at their own discretion and risk.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">5. Intellectual Property</h2>
-            <p className="mb-4">
-              The Site and its original content, customized interface, features, and functionality are owned by EarthLookup and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
-            </p>
-            <p>
-              Public domain assets utilized in our database, including national anthems, geographical data, and flag SVG files, remain the property of their respective international governing bodies and open-source providers.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">6. Limitation of Liability</h2>
-            <p className="mb-4">
-              In no event shall EarthLookup, nor its developers, partners, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
-            </p>
-            <ul className="list-disc pl-6 space-y-2 text-gray-400">
-              <li>Your access to or use of or inability to access or use the Service.</li>
-              <li>Any conduct or content of any third party on the Service.</li>
-              <li>Any unauthorized access, use or alteration of your transmissions or content.</li>
-            </ul>
-          </section>
-
         </article>
 
-        <footer className="mt-20 pt-8 border-t border-white/10 text-center">
-          <p className="text-gray-500 text-xs uppercase tracking-widest">EarthLookup Intelligence Systems © 2026. All Rights Reserved.</p>
-        </footer>
-
       </main>
+
+      <TrustFooter />
     </div>
   );
 }
