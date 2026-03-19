@@ -1,282 +1,225 @@
 "use client";
 
-import React, { useState, useRef, useEffect, memo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import TrustFooter from "../../../components/TrustFooter";
 
-const translations: Record<string, Record<string, string>> = {
-  EN: {
-    pop: "Population", cap: "Capital", cur: "Currency",
-    time: "Local Time", temp: "Temp", mil: "Mil Rank",
-    births: "Births", deaths: "Deaths", fetching: "FETCHING...", live: "LIVE FEED",
-    back: "← Back to Globe", connected: "Connected", mainframe: "Mainframe",
-    cat1: "Geography & Climate", cat2: "The People", cat3: "State & Security",
-    cat4: "Macroeconomics", cat5: "Tech & Infrastructure", cat6: "History & Eras",
-    cat7: "Health & Longevity", cat8: "Travel & Logistics"
-  }
-};
+export default function CountryDossier({ params }: { params: { slug: string } }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-const LiveClock = memo(({ timezones }: { timezones: string[] }) => {
-  const [localTime, setLocalTime] = useState<string>("CALCULATING...");
+  // Re-format the slug to match your downloaded MP3 files (e.g., 'united-states', 'bahamas')
+  const cleanSlug = decodeURIComponent(params.slug).toLowerCase().replace(/\s+/g, '-');
+  const anthemPath = `/anthems/${cleanSlug}.mp3`;
+
   useEffect(() => {
-    if (!timezones || timezones.length === 0) return;
-    const tzString = timezones[0];
-    let offsetHours = 0, offsetMinutes = 0;
-    if (tzString !== "UTC") {
-      const sign = tzString.includes("-") ? -1 : 1;
-      const parts = tzString.replace("UTC", "").replace("+", "").replace("-", "").split(":");
-      offsetHours = parseInt(parts[0]) * sign;
-      if (parts.length > 1) offsetMinutes = parseInt(parts[1]) * sign;
-    }
-    const tick = () => {
-      const now = new Date();
-      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const countryTime = new Date(utc + (3600000 * offsetHours) + (60000 * offsetMinutes));
-      setLocalTime(countryTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, [timezones]);
-  return <p className="text-3xl font-black text-white drop-shadow-lg font-mono tracking-tighter">{localTime}</p>;
-});
-
-const LiveDemographics = memo(({ basePopulation }: { basePopulation: number }) => {
-  const [sessionBirths, setSessionBirths] = useState(0);
-  const [sessionDeaths, setSessionDeaths] = useState(0);
-  
-  useEffect(() => {
-    if (!basePopulation) return;
-    const birthRateSec = Math.max(1, Math.round(31536000 / (basePopulation * 0.015)));
-    const deathRateSec = Math.max(1, Math.round(31536000 / (basePopulation * 0.008)));
+    // We decode the slug to fetch the exact country name from the API
+    const fetchName = decodeURIComponent(params.slug);
     
-    const birthInterval = setInterval(() => setSessionBirths(prev => prev + 1), Math.max(100, birthRateSec * 1000));
-    const deathInterval = setInterval(() => setSessionDeaths(prev => prev + 1), Math.max(100, deathRateSec * 1000));
-    return () => { clearInterval(birthInterval); clearInterval(deathInterval); };
-  }, [basePopulation]);
-
-  return (
-    <>
-      <p className="text-4xl font-black text-white drop-shadow-lg relative z-10 flex items-baseline gap-2">
-        {(basePopulation + sessionBirths - sessionDeaths).toLocaleString()}
-      </p>
-      <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-          <p className="text-[9px] font-black tracking-widest uppercase text-green-400">Births: +{sessionBirths}</p>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-          <p className="text-[9px] font-black tracking-widest uppercase text-red-400">Deaths: -{sessionDeaths}</p>
-        </div>
-      </div>
-    </>
-  );
-});
-
-export default function CountryHub({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = React.use(params);
-  const rawSlug = decodeURIComponent(resolvedParams.slug);
-  const countryName = rawSlug.charAt(0).toUpperCase() + rawSlug.slice(1);
-
-  const [liveData, setLiveData] = useState<any>(null);
-  const [isFetching, setIsFetching] = useState(true);
-  const [exchangeRates, setExchangeRates] = useState<{ usd: string } | null>(null);
-  const [weather, setWeather] = useState<{ temp: number } | null>(null);
-  const [activeTabKey, setActiveTabKey] = useState("cat1");
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const t = (key: string) => translations["EN"][key];
-  const categoryKeys = ["cat1", "cat6", "cat2", "cat4", "cat3", "cat5", "cat7", "cat8"];
-
-  useEffect(() => {
-    fetch(`https://restcountries.com/v3.1/name/${rawSlug}?fullText=true`)
+    fetch(`https://restcountries.com/v3.1/name/${fetchName}?fullText=true`)
       .then((res) => res.json())
-      .then((data) => {
-        if (data && data[0]) setLiveData(data[0]);
-        setIsFetching(false);
-      })
-      .catch(() => setIsFetching(false));
-  }, [rawSlug]);
-
-  useEffect(() => {
-    if (!liveData || !liveData.currencies) return;
-    const currencyCode = Object.keys(liveData.currencies)[0];
-    async function fetchMarketData() {
-      try {
-        const res = await fetch("https://open.er-api.com/v6/latest/USD");
-        const fiatData = await res.json();
-        const localRateToUsd = fiatData?.rates?.[currencyCode];
-        if (localRateToUsd) {
-          setExchangeRates({ usd: (1 / localRateToUsd).toFixed(2) });
+      .then((json) => {
+        if (json && json.length > 0) {
+          setData(json[0]);
         }
-      } catch (e) {}
-    }
-    fetchMarketData();
-  }, [liveData]);
-
-  useEffect(() => {
-    if (!liveData || !liveData.latlng) return;
-    const [lat, lng] = liveData.latlng;
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.current_weather) setWeather({ temp: data.current_weather.temperature });
+        setLoading(false);
       })
-      .catch(() => {});
-  }, [liveData]);
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [params.slug]);
 
-  const toggleAudio = () => {
+  const toggleAnthem = () => {
     if (!audioRef.current) return;
-    if (isAudioPlaying) { audioRef.current.pause(); setIsAudioPlaying(false); } 
-    else { audioRef.current.play().then(() => setIsAudioPlaying(true)).catch(() => setIsAudioPlaying(false)); }
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(e => console.error("Audio playback failed. File may be missing in /public/anthems/", e));
+      setIsPlaying(true);
+    }
   };
 
-  const currencyCode = liveData?.currencies ? Object.keys(liveData.currencies)[0] : null;
-  const currencyInfo = currencyCode ? liveData.currencies[currencyCode] : null;
-  const flagUrl = liveData?.flags?.svg || "https://flagcdn.com/w320/un.png";
-  const bgFlagUrl = liveData?.flags?.svg || "https://flagcdn.com/w1280/un.png";
-  
-  const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
-  const audioUrl = `/audio/anthem/${formattedAudioSlug}.mp3`;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-blue-500 font-mono tracking-widest uppercase">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          Decrypting Dossier...
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-red-500 font-mono tracking-widest uppercase flex-col gap-4">
+        <h2>Target Lost. No Data Found.</h2>
+        <Link href="/" className="text-blue-400 underline text-sm">Return to Global Map</Link>
+      </div>
+    );
+  }
+
+  // Extracting data safely
+  const currencyKeys = data.currencies ? Object.keys(data.currencies) : [];
+  const currencyName = currencyKeys.length > 0 ? data.currencies[currencyKeys[0]].name : "N/A";
+  const currencySymbol = currencyKeys.length > 0 ? data.currencies[currencyKeys[0]].symbol : "";
+  const languages = data.languages ? Object.values(data.languages).join(", ") : "N/A";
+  const mapLink = data.maps?.googleMaps || "#";
+  const borders = data.borders ? data.borders.join(", ") : "None (Island/Isolated)";
 
   return (
-    <div className="h-screen w-screen bg-black text-white font-sans selection:bg-white/20 relative overflow-hidden flex">
-      <audio ref={audioRef} src={audioUrl} preload="none" />
+    <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col selection:bg-blue-500/30">
+      
+      {/* HIDDEN AUDIO ELEMENT */}
+      <audio ref={audioRef} src={anthemPath} onEnded={() => setIsPlaying(false)} preload="none" />
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes breathe { 
-          0%, 100% { opacity: 0.25; transform: scale(1); filter: blur(6px); } 
-          50% { opacity: 0.85; transform: scale(1.04); filter: blur(1px) brightness(1.2); } 
-        }
-        .animate-breathe { animation: breathe 10s ease-in-out infinite; }
-        .glass-panel { background: rgba(10,10,10,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-      `}} />
-
-      {/* 🟢 BACKGROUND FLAG */}
-      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center">
-        <div className="w-[1400px] h-[900px] animate-breathe mix-blend-screen" style={{ backgroundImage: `url(${bgFlagUrl})`, backgroundPosition: 'center', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)' }}></div>
-      </div>
-
-      {/* 🟢 LEFT HUD MENU */}
-      <aside className="relative w-64 md:w-80 border-r border-gray-800/40 flex flex-col h-screen z-20 shadow-[10px_0_50px_rgba(0,0,0,0.8)] shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/90 to-black/95"></div>
-        <div className="relative z-10 p-6 border-b border-gray-800/50 glass-panel">
-          <Link href="/" className="text-[10px] font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2 mb-6">
-            <span className="text-blue-500">←</span> {t('back')}
-          </Link>
-          <div className="flex items-center gap-4">
-            <img src={flagUrl} alt="Flag" className="w-10 h-auto rounded shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10" />
-            <h2 className="text-xl font-black tracking-widest uppercase truncate text-blue-400">{countryName}</h2>
-          </div>
+      {/* TOP NAVIGATION BANNER */}
+      <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <Link href="/" className="flex items-center gap-2 text-sm font-black tracking-widest hover:text-blue-400 transition-colors uppercase">
+          <span className="text-xl">←</span> BACK TO GLOBE
+        </Link>
+        <div className="text-[10px] md:text-xs font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-4 py-1.5 rounded-full flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          Dossier Active: {data.name.common}
         </div>
+      </nav>
+
+      {/* MAIN INTELLIGENCE LAYOUT */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-10 flex flex-col lg:flex-row gap-10">
         
-        {/* SCROLLING MENU TABS */}
-        <nav className="relative z-10 flex-1 p-4 overflow-y-auto glass-panel">
-          <p className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-4 px-2">DOSSIER INDEX</p>
-          <ul className="space-y-2">
-            {categoryKeys.map((catKey) => (
-              <li key={catKey}>
-                <button 
-                  onClick={() => setActiveTabKey(catKey)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-xs font-bold tracking-wider transition-all duration-300 border ${activeTabKey === catKey ? 'bg-white/10 text-white border-blue-500/50 border-s-4' : 'text-gray-400 border-transparent hover:bg-white/5 hover:text-blue-400'}`}
-                >
-                  {t(catKey)}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* 🟢 THE ADSENSE COMPLIANCE FOOTER */}
-        <div className="relative z-10 p-4 border-t border-white/10 bg-black/60 backdrop-blur-md shrink-0">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-2">
-            <Link href="/about" className="text-[8px] font-bold text-gray-500 hover:text-blue-400 uppercase tracking-widest transition-colors">About</Link>
-            <Link href="/privacy" className="text-[8px] font-bold text-gray-500 hover:text-blue-400 uppercase tracking-widest transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-[8px] font-bold text-gray-500 hover:text-blue-400 uppercase tracking-widest transition-colors">Terms</Link>
-            <Link href="/contact" className="text-[8px] font-bold text-gray-500 hover:text-blue-400 uppercase tracking-widest transition-colors">Contact</Link>
-          </div>
-          <div className="text-center text-[8px] font-mono text-gray-600 tracking-widest uppercase">
-            © 2026 // EarthLookup
-          </div>
-        </div>
-      </aside>
-
-      {/* 🟢 CENTER TERMINAL */}
-      <main className="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
-        <header className="p-8 md:p-10 border-b border-white/5 flex justify-between items-end glass-panel shrink-0">
-          <div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-2 text-white drop-shadow-2xl">{countryName}</h1>
-            <p className="text-sm text-gray-400 font-light tracking-widest uppercase">{t('mainframe')} / <span className="text-blue-400">{t('connected')}</span></p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={toggleAudio} className={`flex items-center gap-2 border ${isAudioPlaying ? 'border-blue-500' : 'border-gray-700'} bg-black/50 px-4 py-2 rounded-full hover:bg-white/5 transition-all`}>
-              <span className={`text-[9px] font-black tracking-[0.1em] ${isAudioPlaying ? 'text-blue-400' : 'text-gray-500'}`}>ANTHEM</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-8 md:p-12 glass-panel">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-1 h-8 rounded-full bg-blue-500"></div>
-              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">{t(activeTabKey)}</h2>
+        {/* LEFT COLUMN: VISUALS & CORE ACTIONS */}
+        <aside className="w-full lg:w-1/3 flex flex-col gap-8">
+          
+          <div className="bg-[#0a0a0a] border border-blue-900/40 rounded-3xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-all"></div>
+            
+            <img src={data.flags.svg} alt={`Flag of ${data.name.common}`} className="w-full object-cover rounded-xl shadow-lg border border-white/10 mb-6 aspect-video" />
+            
+            <h1 className="text-4xl font-black uppercase tracking-tighter mb-1">{data.name.common}</h1>
+            <h2 className="text-sm font-mono text-gray-400 mb-6">{data.name.official}</h2>
+            
+            <div className="flex gap-4 mb-8">
+              <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-center flex-1">
+                <span className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">CCA2</span>
+                <span className="font-mono text-lg text-blue-400">{data.cca2}</span>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-center flex-1">
+                <span className="block text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">CCA3</span>
+                <span className="font-mono text-lg text-blue-400">{data.cca3}</span>
+              </div>
             </div>
 
-            {/* DYNAMIC API WIDGETS */}
-            {activeTabKey === "cat1" && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-black/40 border border-white/5 p-5 rounded-2xl flex flex-col justify-center">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-1">{t('time')}</h3>
-                  {liveData ? <LiveClock timezones={liveData.timezones} /> : <span>...</span>}
-                </div>
-                <div className="bg-black/40 border border-white/5 p-5 rounded-2xl flex flex-col justify-center">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-1">{t('temp')}</h3>
-                  <p className="text-3xl font-black text-white">{weather ? `${weather.temp}°C` : "..."}</p>
-                </div>
-                <div className="bg-black/40 border border-white/5 p-5 rounded-2xl col-span-2 flex flex-col justify-center">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-1">Area Profile</h3>
-                  <p className="text-xl font-bold text-white">{liveData ? `${liveData.area.toLocaleString()} km²` : "..."}</p>
-                </div>
-              </div>
-            )}
-
-            {activeTabKey === "cat2" && (
-              <div className="bg-black/40 border border-white/5 p-6 rounded-2xl mb-8">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-4">{t('pop')}</h3>
-                {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
-              </div>
-            )}
-
-            {activeTabKey === "cat4" && (
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-black/40 border border-white/5 p-5 rounded-2xl">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-1">{t('cur')}</h3>
-                  <p className="text-xl font-black text-white">{currencyInfo ? `${currencyInfo.symbol} ${currencyInfo.name}` : "..."}</p>
-                </div>
-                <div className="bg-black/40 border border-white/5 p-5 rounded-2xl">
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-1">1 {currencyCode || "Unit"} to USD</h3>
-                  <p className="text-xl font-black text-green-400">${exchangeRates?.usd || "..."}</p>
-                </div>
-              </div>
-            )}
-
-            {/* UNIVERSAL FALLBACK FOR TEXT TABS */}
-            {activeTabKey !== "cat1" && activeTabKey !== "cat2" && activeTabKey !== "cat4" && (
-              <div className="animate-in fade-in duration-500 mt-4 pt-4 border-t border-white/10">
-                <p className="text-blue-400 font-bold mb-2 text-sm border-b border-blue-500/20 pb-1">Database Uplink</p>
-                <p className="text-gray-400 text-sm italic leading-relaxed">
-                  The mainframe is actively compiling deep-level data for {countryName}. We are pulling live demographics, atmospheric conditions, and border data straight from the global API. Detailed historical and geopolitical intelligence briefs will be injected shortly.
-                </p>
-              </div>
-            )}
-
+            {/* ANTHEM & MAPS BUTTONS */}
+            <div className="flex flex-col gap-3">
+              <button onClick={toggleAnthem} className={`w-full font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-3 transition-all border ${isPlaying ? 'bg-blue-500/20 text-blue-400 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'}`}>
+                {isPlaying ? (
+                   <>⏸ PAUSE ANTHEM</>
+                ) : (
+                   <>▶ PLAY ANTHEM</>
+                )}
+              </button>
+              <a href={mapLink} target="_blank" className="w-full bg-[#0a0a0a] text-gray-300 font-bold uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-3 border border-white/10 hover:border-blue-500/50 hover:text-white transition-all text-sm">
+                📍 OPEN IN GOOGLE MAPS
+              </a>
+            </div>
           </div>
-        </div>
+
+          {/* COAT OF ARMS (If it exists) */}
+          {data.coatOfArms && data.coatOfArms.svg && (
+             <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg">
+               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Official Insignia</h3>
+               <img src={data.coatOfArms.svg} alt={`Coat of Arms of ${data.name.common}`} className="w-32 h-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
+             </div>
+          )}
+
+        </aside>
+
+        {/* RIGHT COLUMN: INTELLIGENCE GRID */}
+        <section className="w-full lg:w-2/3 flex flex-col gap-8">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            {/* DEMOGRAPHICS */}
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
+              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                 Live Demographics
+              </div>
+              <div className="text-3xl font-black tracking-tight">{new Intl.NumberFormat().format(data.population || 0)}</div>
+              <div className="text-sm text-gray-400 mt-1">Total Population</div>
+            </div>
+
+            {/* CAPITAL */}
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
+              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                 Seat of Government
+              </div>
+              <div className="text-3xl font-black tracking-tight">{data.capital && data.capital.length > 0 ? data.capital[0] : "N/A"}</div>
+              <div className="text-sm text-gray-400 mt-1">Capital City</div>
+            </div>
+
+            {/* ECONOMICS */}
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
+              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 Macroeconomics
+              </div>
+              <div className="text-xl font-bold">{currencyName} <span className="text-blue-400 ml-1">{currencySymbol}</span></div>
+              <div className="text-sm text-gray-400 mt-1">Official Currency</div>
+            </div>
+
+            {/* GEOGRAPHY */}
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
+              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                 Land Area
+              </div>
+              <div className="text-2xl font-bold">{new Intl.NumberFormat().format(data.area || 0)} <span className="text-sm text-gray-400">km²</span></div>
+              <div className="text-sm text-gray-400 mt-1">Total Square Kilometers</div>
+            </div>
+            
+          </div>
+
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg">
+             <h3 className="text-sm font-black text-white uppercase tracking-widest border-b border-white/10 pb-4">Extended Intelligence</h3>
+             
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Region / Subregion</span>
+                  <span className="font-medium text-gray-200">{data.region} / {data.subregion || "N/A"}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Official Languages</span>
+                  <span className="font-medium text-gray-200">{languages}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Bordering Nations</span>
+                  <span className="font-mono text-gray-300 text-xs">{borders}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Timezones</span>
+                  <span className="font-mono text-gray-300 text-xs">{data.timezones ? data.timezones.join(", ") : "N/A"}</span>
+                </div>
+             </div>
+          </div>
+
+          {/* THE ADSENSE ZONE */}
+          <div className="w-full h-32 md:h-24 bg-black border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center relative overflow-hidden">
+             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
+             <span className="text-gray-600 font-mono text-xs uppercase tracking-widest font-bold z-10">Google AdSense Zone</span>
+          </div>
+
+        </section>
       </main>
+
+      {/* UNIVERSAL FOOTER */}
+      <TrustFooter />
+      
     </div>
   );
 }

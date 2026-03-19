@@ -23,7 +23,8 @@ export default function GlobalCommandCenter() {
   const globeRef = useRef<any>(null);
   const elementsCache = useRef<Record<string, HTMLElement>>({}); 
 
-  const getInitialAltitude = (w: number) => (w < 768 ? 3.5 : 2.2);
+  // 🟢 OVERRIDE: Pushed mobile altitude all the way back to 5.5 for a perfect fit
+  const getInitialAltitude = (w: number) => (w < 768 ? 5.5 : 2.2);
 
   useEffect(() => {
     setDimensions({ width: window.innerWidth, height: window.innerHeight });
@@ -44,14 +45,10 @@ export default function GlobalCommandCenter() {
     }
   }, [isZoomedIn, selectedTarget, nations.length]); 
 
+  // 🟢 OVERRIDE: Nuked the sessionStorage memory hijack. It will always load perfectly now.
   useEffect(() => {
     if (globeRef.current && dimensions.width > 0) {
-        const savedCamera = sessionStorage.getItem('earthLookupCamera');
-        if (savedCamera) {
-            globeRef.current.pointOfView(JSON.parse(savedCamera), 0);
-        } else {
-            globeRef.current.pointOfView({ altitude: getInitialAltitude(dimensions.width) });
-        }
+        globeRef.current.pointOfView({ altitude: getInitialAltitude(dimensions.width) }, 0);
     }
   }, [dimensions.width]);
 
@@ -122,10 +119,7 @@ export default function GlobalCommandCenter() {
   };
 
   const navigateToDossier = (slug: string) => {
-      if (globeRef.current) {
-          const currentView = globeRef.current.pointOfView();
-          sessionStorage.setItem('earthLookupCamera', JSON.stringify(currentView));
-      }
+      // 🟢 OVERRIDE: Stopped saving the camera zoom to prevent bugs when coming back
       router.push(`/country/${slug}`);
   };
 
@@ -142,12 +136,10 @@ export default function GlobalCommandCenter() {
   };
 
   return (
-    // 🟢 PERFORMANCE FIX: Removed bg-black so the pure CSS starry night shines through
     <div className="w-screen h-screen overflow-hidden relative font-sans text-white">
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
         
-        /* 🟢 CSS ACCELERATION: Rendering the stars directly on the browser background instead of the 3D GPU */
         body { 
           font-family: 'Inter', sans-serif !important; 
           background-color: #050505; 
@@ -239,10 +231,7 @@ export default function GlobalCommandCenter() {
             width={dimensions.width}
             height={dimensions.height}
             globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
-            
-            // 🟢 Transparent background so the pure CSS stars shine through
             backgroundColor="rgba(0,0,0,0)" 
-            
             polygonsData={worldPolygons}
             polygonSideColor={() => 'rgba(0, 0, 0, 0.2)'}
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.3)'}
@@ -252,11 +241,7 @@ export default function GlobalCommandCenter() {
             onPolygonClick={(poly: any) => {
                 const clickedName = poly.properties.name.toLowerCase();
                 let target = nationLookup[clickedName];
-                
-                if (!target) {
-                    target = nations.find((n: any) => n.searchTerms.includes(clickedName));
-                }
-                
+                if (!target) { target = nations.find((n: any) => n.searchTerms.includes(clickedName)); }
                 if (target) {
                     if (selectedTarget && selectedTarget.name === target.name) navigateToDossier(target.slug);
                     else flyToTarget(target);
