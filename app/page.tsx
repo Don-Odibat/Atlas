@@ -142,10 +142,22 @@ export default function GlobalCommandCenter() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-black relative font-sans text-white">
+    // 🟢 PERFORMANCE FIX: Removed bg-black so the pure CSS starry night shines through
+    <div className="w-screen h-screen overflow-hidden relative font-sans text-white">
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif !important; background: black; margin: 0; padding: 0; }
+        
+        /* 🟢 CSS ACCELERATION: Rendering the stars directly on the browser background instead of the 3D GPU */
+        body { 
+          font-family: 'Inter', sans-serif !important; 
+          background-color: #050505; 
+          background-image: url('https://unpkg.com/three-globe/example/img/night-sky.png');
+          background-size: cover;
+          background-position: center;
+          margin: 0; 
+          padding: 0; 
+        }
+
         .country-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; pointer-events: auto; will-change: transform; z-index: 10; }
         .country-dot { width: 4px; height: 4px; background-color: #3b82f6; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.8); margin-bottom: 3px; transition: all 0.3s ease; }
         @keyframes radar-ping { 0% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0.8); } 70% { box-shadow: 0 0 0 20px rgba(0, 246, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0); } }
@@ -228,7 +240,7 @@ export default function GlobalCommandCenter() {
             height={dimensions.height}
             globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
             
-            // 🟢 PERFORMANCE FIX: Nuked the heavy image, using fast pure CSS background
+            // 🟢 Transparent background so the pure CSS stars shine through
             backgroundColor="rgba(0,0,0,0)" 
             
             polygonsData={worldPolygons}
@@ -251,7 +263,6 @@ export default function GlobalCommandCenter() {
                 }
             }}
             
-            // 🟢 LABEL FIX: Restored the readable HTML labels, but made them ultra-lightweight
             htmlElementsData={nations}
             htmlLat="lat"
             htmlLng="lng"
@@ -262,7 +273,6 @@ export default function GlobalCommandCenter() {
               if (!el) {
                 el = document.createElement('div');
                 el.className = 'country-wrapper';
-                // ONLY inject the heavy stuff if clicked. Default is lightweight text.
                 el.innerHTML = `<div class="country-label">${d.name}</div>`;
                 elementsCache.current[d.slug] = el;
               }
