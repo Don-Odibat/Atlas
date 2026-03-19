@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -13,6 +13,10 @@ export default function GlobalCommandCenter() {
   const [isFocused, setIsFocused] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [nations, setNations] = useState<any[]>([]);
+  
+  // 🟢 ADDED: Our new instant-lookup dictionary to prevent memory leaks on click
+  const [nationLookup, setNationLookup] = useState<Record<string, any>>({});
+  
   const [worldPolygons, setWorldPolygons] = useState<any[]>([]);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
@@ -65,6 +69,8 @@ export default function GlobalCommandCenter() {
     fetch("https://restcountries.com/v3.1/all?fields=name,latlng,cca2,flags,capital,population")
       .then((res: any) => res.json())
       .then((data: any) => {
+        const lookupMap: Record<string, any> = {}; // 🟢 ADDED: Initializing the dictionary
+        
         const formatted = data
           .filter((c: any) => c.latlng?.length === 2 && c.name.common !== "Israel") 
           .map((c: any) => {
@@ -73,7 +79,7 @@ export default function GlobalCommandCenter() {
             if (c.cca2 === 'GB') aliases.push('UK', 'England', 'Great Britain', 'United Kingdom');
             if (c.cca2 === 'JO') aliases.push('JOR', 'Hashemite Kingdom of Jordan');
             
-            return {
+            const countryData = {
               lat: c.latlng[0],
               lng: c.latlng[1],
               name: c.name.common,
@@ -84,8 +90,18 @@ export default function GlobalCommandCenter() {
               population: new Intl.NumberFormat().format(c.population || 0),
               searchTerms: aliases.map((a: string) => a.toLowerCase())
             };
+
+            // 🟢 ADDED: Populating the dictionary for instant lookup
+            lookupMap[countryData.name.toLowerCase()] = countryData;
+            countryData.searchTerms.forEach((term: string) => {
+                lookupMap[term] = countryData;
+            });
+
+            return countryData;
           });
+          
         setNations(formatted);
+        setNationLookup(lookupMap); // 🟢 ADDED: Saving the dictionary to state
       });
   }, []);
 
@@ -213,11 +229,12 @@ export default function GlobalCommandCenter() {
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.3)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : 'rgba(30, 58, 138, 0.4)'}
             polygonHoverColor={() => 'rgba(0, 246, 255, 0.3)'}
+            
+            // 🟢 EDITED: Replaced heavy array search with instant Hash Map lookup
             onPolygonClick={(poly: any) => {
-                let target = nations.find((n: any) => n.name === poly.properties.name);
-                if (!target) {
-                    target = nations.find((n: any) => n.searchTerms.includes(poly.properties.name.toLowerCase()));
-                }
+                const clickedName = poly.properties.name.toLowerCase();
+                const target = nationLookup[clickedName];
+                
                 if (target) {
                     if (selectedTarget && selectedTarget.name === target.name) navigateToDossier(target.slug);
                     else flyToTarget(target);
