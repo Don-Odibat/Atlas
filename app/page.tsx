@@ -13,17 +13,15 @@ export default function GlobalCommandCenter() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [nations, setNations] = useState<any[]>([]);
   const [worldPolygons, setWorldPolygons] = useState<any[]>([]);
-  const [isConnecting, setIsConnecting] = useState(true);
   const [isIdle, setIsIdle] = useState(true);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
-  
   const [showBanner, setShowBanner] = useState(true);
-  
-  // THE TARGET LOCK MEMORY
   const [selectedTarget, setSelectedTarget] = useState<any>(null);
 
   const router = useRouter();
-  const globeRef = useRef<any>();
+  
+  // FIXED: Added null as the initial value to satisfy the Vercel build error
+  const globeRef = useRef<any>(null);
 
   useEffect(() => {
     setDimensions({ width: window.innerWidth, height: window.innerHeight });
@@ -111,7 +109,6 @@ export default function GlobalCommandCenter() {
             };
           });
         setNations(formatted);
-        setIsConnecting(false);
       });
   }, []);
 
@@ -159,137 +156,24 @@ export default function GlobalCommandCenter() {
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif !important; background: black; margin: 0; padding: 0; }
-        
-        .country-wrapper { 
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            cursor: pointer; 
-            pointer-events: auto;
-            will-change: transform; /* 🟢 PERFORMANCE FIX: Forces Hardware Acceleration */
-        }
-
-        .country-dot {
-            width: 4px;
-            height: 4px;
-            background-color: #3b82f6;
-            border-radius: 50%;
-            box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.8);
-            margin-bottom: 3px;
-            transition: all 0.3s ease;
-        }
-
-        @keyframes radar-ping {
-            0% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0.8); }
-            70% { box-shadow: 0 0 0 20px rgba(0, 246, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0); }
-        }
-        .country-dot.target-ping {
-            width: 8px;
-            height: 8px;
-            background-color: #00f6ff;
-            box-shadow: 0 0 15px 5px rgba(0, 246, 255, 0.9);
-            animation: radar-ping 2s infinite cubic-bezier(0.66, 0, 0, 1);
-        }
-
-        .country-label {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 8px;
-          font-weight: 700;
-          letter-spacing: 0.5px;
-          text-shadow: 0 0 6px rgba(0,0,0,1);
-          transition: all 0.3s ease;
-        }
-        
-        /* 🟢 PERFORMANCE FIX: Removed blur, added visibility toggle */
-        .country-popover {
-          position: absolute;
-          bottom: 24px;
-          background: rgba(10, 10, 10, 0.98); 
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          padding: 12px;
-          border-radius: 4px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          opacity: 0;
-          visibility: hidden; /* Tells the GPU to stop calculating this until needed */
-          transform: translateY(5px) scale(0.95);
-          pointer-events: none;
-          transition: opacity 0.3s, transform 0.3s;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.9);
-          min-width: 150px;
-          text-align: left;
-        }
-        
-        .country-popover.force-open {
-            opacity: 1 !important;
-            visibility: visible !important;
-            transform: translateY(0) scale(1) !important;
-            border-color: #00f6ff;
-            box-shadow: 0 0 30px rgba(0, 246, 255, 0.2);
-            pointer-events: auto;
-        }
-
-        .country-wrapper:hover .country-popover { 
-            opacity: 1; 
-            visibility: visible;
-            transform: translateY(0) scale(1); 
-        }
-        
-        .country-wrapper:hover .country-label { 
-            color: #3b82f6; 
-            transform: scale(1.2); 
-            text-shadow: 0 0 10px rgba(59,130,246,0.5);
-        }
-        .country-wrapper:hover .country-dot:not(.target-ping) {
-            transform: scale(1.5);
-            background-color: #60a5fa;
-            box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.9);
-        }
-        
-        .popover-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 8px;
-        }
-        .popover-data {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 9px;
-            color: #9ca3af;
-            letter-spacing: 0.5px;
-        }
-        .popover-data span {
-            color: white;
-            font-weight: 600;
-        }
-        .popover-arrow {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 8px;
-            font-weight: 800;
-            color: #3b82f6;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-            transition: color 0.2s;
-        }
-        .popover-arrow:hover {
-            color: #00f6ff;
-        }
-        .popover-arrow span {
-            font-size: 12px;
-            margin-bottom: 1px;
-        }
+        .country-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; pointer-events: auto; will-change: transform; }
+        .country-dot { width: 4px; height: 4px; background-color: #3b82f6; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.8); margin-bottom: 3px; transition: all 0.3s ease; }
+        @keyframes radar-ping { 0% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0.8); } 70% { box-shadow: 0 0 0 20px rgba(0, 246, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0); } }
+        .country-dot.target-ping { width: 8px; height: 8px; background-color: #00f6ff; box-shadow: 0 0 15px 5px rgba(0, 246, 255, 0.9); animation: radar-ping 2s infinite cubic-bezier(0.66, 0, 0, 1); }
+        .country-label { color: rgba(255, 255, 255, 0.6); font-size: 8px; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 6px rgba(0,0,0,1); transition: all 0.3s ease; }
+        .country-popover { position: absolute; bottom: 24px; background: rgba(10, 10, 10, 0.98); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 4px; display: flex; flex-direction: column; gap: 10px; opacity: 0; visibility: hidden; transform: translateY(5px) scale(0.95); pointer-events: none; transition: opacity 0.3s, transform 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.9); min-width: 150px; text-align: left; }
+        .country-popover.force-open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) scale(1) !important; border-color: #00f6ff; box-shadow: 0 0 30px rgba(0, 246, 255, 0.2); pointer-events: auto; }
+        .country-wrapper:hover .country-popover { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .country-wrapper:hover .country-label { color: #3b82f6; transform: scale(1.2); text-shadow: 0 0 10px rgba(59,130,246,0.5); }
+        .country-wrapper:hover .country-dot:not(.target-ping) { transform: scale(1.5); background-color: #60a5fa; box-shadow: 0 0 12px 4px rgba(59, 130, 246, 0.9); }
+        .popover-header { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; }
+        .popover-data { display: flex; flex-direction: column; gap: 4px; font-size: 9px; color: #9ca3af; letter-spacing: 0.5px; }
+        .popover-data span { color: white; font-weight: 600; }
+        .popover-arrow { display: flex; align-items: center; gap: 4px; font-size: 8px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; transition: color 0.2s; }
+        .popover-arrow:hover { color: #00f6ff; }
+        .popover-arrow span { font-size: 12px; margin-bottom: 1px; }
       `}} />
 
-      {/* THE HUMAN WELCOME BANNER */}
       <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[200] max-w-2xl w-[95%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
         <div className="bg-black/85 backdrop-blur-2xl border border-blue-500/40 p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(37,99,235,0.25)] pointer-events-auto">
           <div className="flex justify-between items-start mb-4">
@@ -309,15 +193,11 @@ export default function GlobalCommandCenter() {
         </div>
       </div>
 
-      {/* TOP-LEFT BRANDING */}
       <div className="fixed top-8 left-8 z-[100] pointer-events-none select-none hidden md:block">
-        <h1 className="text-xl md:text-2xl font-black tracking-tighter m-0 p-0 leading-none">
-            EARTH<span className="text-blue-500">LOOKUP</span><span className="text-[10px] text-gray-500 ml-1">.COM</span>
-        </h1>
+        <h1 className="text-xl md:text-2xl font-black tracking-tighter m-0 p-0 leading-none">EARTH<span className="text-blue-500">LOOKUP</span><span className="text-[10px] text-gray-500 ml-1">.COM</span></h1>
         <h2 className="text-[8px] font-bold tracking-[0.2em] text-gray-400 uppercase mt-1">Ultimate Geography Encyclopedia</h2>
       </div>
 
-      {/* BOTTOM-LEFT: GLOBAL COMPLIANCE FOOTER (AdSense Ready) */}
       <div className="fixed bottom-8 left-4 md:left-8 z-[100] flex flex-col gap-3 bg-black/50 border border-white/10 p-5 rounded-xl backdrop-blur-md shadow-2xl pointer-events-auto">
         <div className="flex gap-4">
           <Link href="/about" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-blue-400 uppercase tracking-widest transition-colors">About</Link>
@@ -325,136 +205,71 @@ export default function GlobalCommandCenter() {
           <Link href="/terms" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-blue-400 uppercase tracking-widest transition-colors">Terms</Link>
           <Link href="/contact" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-blue-400 uppercase tracking-widest transition-colors">Contact</Link>
         </div>
-        <div className="text-[8px] md:text-[9px] font-mono text-gray-600 font-bold tracking-widest uppercase">
-          © 2026 // EarthLookup Systems
-        </div>
+        <div className="text-[8px] md:text-[9px] font-mono text-gray-600 font-bold tracking-widest uppercase">© 2026 // EarthLookup Systems</div>
       </div>
 
-      {/* TOP-RIGHT SEARCH */}
       <div className="fixed top-8 right-4 md:right-8 z-[100] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
         <div className="bg-black/60 border border-white/10 rounded-full flex items-center px-4 backdrop-blur-md shadow-lg pointer-events-auto">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 min-w-[16px]">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="text"
-            className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide"
-            placeholder="Search a country..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-            onKeyDown={(e) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])}
-          />
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 min-w-[16px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide" placeholder="Search a country..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setTimeout(() => setIsFocused(false), 200)} onKeyDown={(e) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])} />
         </div>
         {searchQuery && isFocused && (
           <div className="mt-2 bg-black/90 border border-white/10 rounded-xl max-h-60 overflow-y-auto backdrop-blur-xl shadow-2xl pointer-events-auto">
             {filteredNations.slice(0, 10).map(n => (
               <button key={n.slug} onClick={() => flyToTarget(n)} className="w-full text-left px-4 py-3 hover:bg-blue-500/10 text-sm flex items-center gap-3 border-b border-white/5 last:border-0">
                 <img src={n.flag} className="w-4 h-auto rounded-sm" alt="" /> 
-                <div className="flex flex-col">
-                    <span className="font-bold">{n.name}</span>
-                    <span className="text-[9px] text-gray-500 uppercase tracking-tighter">{n.code}</span>
-                </div>
+                <div className="flex flex-col"><span className="font-bold">{n.name}</span><span className="text-[9px] text-gray-500 uppercase tracking-tighter">{n.code}</span></div>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* ON-SCREEN ZOOM CONTROLS */}
       <div className="fixed bottom-12 right-4 md:right-8 z-[100] flex flex-col bg-black/50 border border-white/10 rounded-lg backdrop-blur-md overflow-hidden shadow-2xl pointer-events-auto">
-        <button 
-          onClick={() => handleZoom('in')}
-          className="w-10 h-10 flex items-center justify-center text-white hover:bg-blue-500/20 hover:text-blue-400 transition-colors border-b border-white/10 text-xl font-light"
-          aria-label="Zoom in"
-        >
-          +
-        </button>
-        <button 
-          onClick={() => handleZoom('out')}
-          className="w-10 h-10 flex items-center justify-center text-white hover:bg-blue-500/20 hover:text-blue-400 transition-colors text-xl font-light"
-          aria-label="Zoom out"
-        >
-          −
-        </button>
+        <button onClick={() => handleZoom('in')} className="w-10 h-10 flex items-center justify-center text-white hover:bg-blue-500/20 hover:text-blue-400 transition-colors border-b border-white/10 text-xl font-light">+</button>
+        <button onClick={() => handleZoom('out')} className="w-10 h-10 flex items-center justify-center text-white hover:bg-blue-500/20 hover:text-blue-400 transition-colors text-xl font-light">−</button>
       </div>
 
-      {/* THE HD VECTOR GLOBE WITH TARGET LOCK */}
       <div className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing">
         {dimensions.width > 0 && (
           <Globe
             ref={globeRef}
             width={dimensions.width}
             height={dimensions.height}
-            
             globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
             backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
-            
             polygonsData={worldPolygons}
             polygonSideColor={() => 'rgba(0, 0, 0, 0.4)'}
-            polygonCapColor={(poly: any) => 
-                selectedTarget && poly.properties.name === selectedTarget.name
-                ? 'rgba(0, 246, 255, 0.3)' 
-                : 'rgba(10, 10, 10, 0.6)'  
-            }
-            polygonStrokeColor={(poly: any) => 
-                selectedTarget && poly.properties.name === selectedTarget.name
-                ? '#00f6ff' 
-                : '#1e3a8a' 
-            }
+            polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.6)'}
+            polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : '#1e3a8a'}
             polygonHoverColor={() => 'rgba(59, 130, 246, 0.3)'}
-            
             onPolygonClick={(poly: any) => {
                 const target = nations.find(n => n.name === poly.properties.name);
                 if (target) {
-                    if (selectedTarget && selectedTarget.name === target.name) {
-                        navigateToDossier(target.slug);
-                    } else {
-                        flyToTarget(target);
-                    }
+                    if (selectedTarget && selectedTarget.name === target.name) navigateToDossier(target.slug);
+                    else flyToTarget(target);
                 }
             }}
-            
             htmlElementsData={nations}
             htmlLat="lat"
             htmlLng="lng"
             htmlElement={(d: any) => {
               const isTarget = selectedTarget && selectedTarget.slug === d.slug;
-              
               const el = document.createElement('div');
               el.className = 'country-wrapper';
               el.style.zIndex = isTarget ? '1000' : '1'; 
-              
               el.innerHTML = `
                 <div class="country-dot ${isTarget ? 'target-ping' : ''}"></div>
                 <div class="country-popover ${isTarget ? 'force-open' : ''}">
-                  <div class="popover-header">
-                      <img src="${d.flag}" style="width: 22px; border-radius: 2px;" />
-                      <span style="font-weight: 800; font-size: 11px; color: white; letter-spacing: 0.5px;">${d.name}</span>
-                  </div>
-                  <div class="popover-data">
-                      <div>CAPITAL: <span>${d.capital}</span></div>
-                      <div>POP: <span>${d.population}</span></div>
-                  </div>
-                  <div class="popover-arrow ${isTarget ? 'animate-pulse text-[#00f6ff]' : ''}">
-                      ${isTarget ? 'CLICK TO ACCESS' : 'ACCESS DOSSIER'} <span>→</span>
-                  </div>
+                  <div class="popover-header"><img src="${d.flag}" style="width: 22px; border-radius: 2px;" /> <span style="font-weight: 800; font-size: 11px; color: white; letter-spacing: 0.5px;">${d.name}</span></div>
+                  <div class="popover-data"><div>CAPITAL: <span>${d.capital}</span></div><div>POP: <span>${d.population}</span></div></div>
+                  <div class="popover-arrow ${isTarget ? 'animate-pulse text-[#00f6ff]' : ''}">${isTarget ? 'CLICK TO ACCESS' : 'ACCESS DOSSIER'} <span>→</span></div>
                 </div>
                 <div class="country-label" style="${isTarget ? 'color: #00f6ff;' : ''}">${d.name}</div>
               `;
-              
-              el.onclick = () => {
-                  if (isTarget) {
-                      navigateToDossier(d.slug);
-                  } else {
-                      flyToTarget(d);
-                  }
-              };
+              el.onclick = () => { if (isTarget) navigateToDossier(d.slug); else flyToTarget(d); };
               return el;
             }}
-            
             onZoom={(pov: any) => setIsZoomedIn(pov.altitude < 1.8)}
           />
         )}
