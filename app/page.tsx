@@ -13,7 +13,7 @@ export default function GlobalCommandCenter() {
   const [isFocused, setIsFocused] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [nations, setNations] = useState<any[]>([]);
-  const [nationLookup, setNationLookup] = useState<Record<string, any>>({}); // 🟢 High-speed dictionary restored
+  const [nationLookup, setNationLookup] = useState<Record<string, any>>({}); 
   const [worldPolygons, setWorldPolygons] = useState<any[]>([]);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
@@ -21,9 +21,8 @@ export default function GlobalCommandCenter() {
 
   const router = useRouter();
   const globeRef = useRef<any>(null);
-  const elementsCache = useRef<Record<string, HTMLElement>>({}); // 🟢 DOM Element Cache to stop memory leaks
+  const elementsCache = useRef<Record<string, HTMLElement>>({}); 
 
-  // PRO MOD: Mobile Precision Scaling
   const getInitialAltitude = (w: number) => (w < 768 ? 3.5 : 2.2);
 
   useEffect(() => {
@@ -33,12 +32,10 @@ export default function GlobalCommandCenter() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // PRO MOD: Perpetual Kinetic Spin
   useEffect(() => {
     if (globeRef.current) {
       const controls = globeRef.current.controls();
       if (controls) {
-        // Spins instantly, ignores search bar. Only stops when zoomed in or locked on a target.
         controls.autoRotate = !isZoomedIn && !selectedTarget;
         controls.autoRotateSpeed = 0.4; 
         controls.enableDamping = true;
@@ -92,7 +89,6 @@ export default function GlobalCommandCenter() {
               searchTerms: aliases.map((a: string) => a.toLowerCase())
             };
 
-            // Build instant lookup dictionary
             lookupMap[countryData.name.toLowerCase()] = countryData;
             countryData.searchTerms.forEach((term: string) => {
                 lookupMap[term] = countryData;
@@ -147,7 +143,6 @@ export default function GlobalCommandCenter() {
 
   return (
     <div className="w-screen h-screen overflow-hidden bg-black relative font-sans text-white">
-      {/* PRO MOD: Restored High-End CSS Details */}
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
         body { font-family: 'Inter', sans-serif !important; background: black; margin: 0; padding: 0; }
@@ -155,9 +150,8 @@ export default function GlobalCommandCenter() {
         .country-dot { width: 4px; height: 4px; background-color: #3b82f6; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.8); margin-bottom: 3px; transition: all 0.3s ease; }
         @keyframes radar-ping { 0% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0.8); } 70% { box-shadow: 0 0 0 20px rgba(0, 246, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 246, 255, 0); } }
         .country-dot.target-ping { width: 8px; height: 8px; background-color: #00f6ff; box-shadow: 0 0 15px 5px rgba(0, 246, 255, 0.9); animation: radar-ping 2s infinite cubic-bezier(0.66, 0, 0, 1); }
-        .country-label { color: rgba(255, 255, 255, 0.7); font-size: 8px; font-weight: 600; letter-spacing: 0.5px; text-shadow: 0 0 6px rgba(0,0,0,1); transition: all 0.3s ease; }
+        .country-label { color: rgba(255, 255, 255, 0.5); font-size: 8px; font-weight: 600; letter-spacing: 0.5px; text-shadow: 0 0 4px rgba(0,0,0,1); transition: all 0.3s ease; white-space: nowrap; }
         
-        /* The Hover Popover */
         .country-popover { position: absolute; bottom: 24px; background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; opacity: 0; visibility: hidden; transform: translateY(5px) scale(0.95); pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.9); min-width: 150px; text-align: left; z-index: 50; }
         .country-popover.force-open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) scale(1) !important; border-color: #00f6ff; box-shadow: 0 0 30px rgba(0, 246, 255, 0.15); pointer-events: auto; }
         .country-wrapper:hover .country-popover { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
@@ -171,7 +165,6 @@ export default function GlobalCommandCenter() {
         .popover-arrow:hover { color: #00f6ff; }
       `}} />
 
-      {/* PRO MOD: Sleek, Translucent Glass Banner */}
       <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[200] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
         <div className="bg-black/30 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] pointer-events-auto">
           <div className="flex justify-between items-start mb-3">
@@ -189,13 +182,11 @@ export default function GlobalCommandCenter() {
         </div>
       </div>
 
-      {/* HEADER LOGO */}
       <div className="fixed top-8 left-8 z-[100] pointer-events-none select-none hidden md:block">
         <h1 className="text-xl md:text-2xl font-black tracking-tighter m-0 p-0 leading-none">EARTH<span className="text-blue-500">LOOKUP</span></h1>
         <h2 className="text-[8px] font-bold tracking-[0.2em] text-gray-400 uppercase mt-1">Ultimate Geography Encyclopedia</h2>
       </div>
 
-      {/* PRO MOD: Don Odibat Master Footer */}
       <div className="fixed bottom-8 left-4 md:left-8 z-[100] flex flex-col gap-2 bg-black/40 border border-white/10 p-4 md:p-5 rounded-xl backdrop-blur-md shadow-2xl pointer-events-auto">
         <div className="flex gap-4">
           <Link href="/about" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">About</Link>
@@ -207,7 +198,6 @@ export default function GlobalCommandCenter() {
         </div>
       </div>
 
-      {/* SEARCH BAR */}
       <div className="fixed top-8 right-4 md:right-8 z-[100] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
         <div className="bg-black/40 border border-white/10 rounded-full flex items-center px-4 backdrop-blur-md shadow-lg pointer-events-auto transition-colors hover:bg-black/60 focus-within:bg-black/80 focus-within:border-blue-500/50">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 min-w-[16px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -225,7 +215,6 @@ export default function GlobalCommandCenter() {
         )}
       </div>
 
-      {/* ZOOM CONTROLS */}
       <div className="fixed bottom-12 right-4 md:right-8 z-[100] flex flex-col bg-black/40 border border-white/10 rounded-lg backdrop-blur-md overflow-hidden shadow-2xl pointer-events-auto">
         <button onClick={() => handleZoom('in')} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-blue-500/20 hover:text-white transition-colors border-b border-white/10 text-xl font-light">+</button>
         <button onClick={() => handleZoom('out')} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:bg-blue-500/20 hover:text-white transition-colors text-xl font-light">−</button>
@@ -238,14 +227,16 @@ export default function GlobalCommandCenter() {
             width={dimensions.width}
             height={dimensions.height}
             globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
-            backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+            
+            // 🟢 PERFORMANCE FIX: Nuked the heavy image, using fast pure CSS background
+            backgroundColor="rgba(0,0,0,0)" 
+            
             polygonsData={worldPolygons}
             polygonSideColor={() => 'rgba(0, 0, 0, 0.2)'}
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.3)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : 'rgba(30, 58, 138, 0.4)'}
             polygonHoverColor={() => 'rgba(0, 246, 255, 0.3)'}
             
-            // PRO MOD: Bulletproof border clicking with high-speed lookup
             onPolygonClick={(poly: any) => {
                 const clickedName = poly.properties.name.toLowerCase();
                 let target = nationLookup[clickedName];
@@ -260,33 +251,28 @@ export default function GlobalCommandCenter() {
                 }
             }}
             
-            // 🟢 PERFORMANCE STRIKE: WebGL GPU rendering for the 195 background countries
-            labelsData={nations}
-            labelLat="lat"
-            labelLng="lng"
-            labelText={(d: any) => selectedTarget && selectedTarget.name === d.name ? "" : d.name}
-            labelSize={0.6}
-            labelDotRadius={0.4}
-            labelColor={() => 'rgba(255, 255, 255, 0.7)'}
-            labelResolution={2}
-            onLabelClick={(d: any) => flyToTarget(d)}
-
-            // 🟢 PERFORMANCE STRIKE: Only render 1 single HTML element for the target
-            htmlElementsData={selectedTarget ? [selectedTarget] : []}
+            // 🟢 LABEL FIX: Restored the readable HTML labels, but made them ultra-lightweight
+            htmlElementsData={nations}
             htmlLat="lat"
             htmlLng="lng"
             htmlElement={(d: any) => {
               const isTarget = selectedTarget && selectedTarget.slug === d.slug;
-              
-              // 🟢 The Cache System: Still completely intact, exactly as you locked it
               let el = elementsCache.current[d.slug];
               
               if (!el) {
                 el = document.createElement('div');
                 el.className = 'country-wrapper';
+                // ONLY inject the heavy stuff if clicked. Default is lightweight text.
+                el.innerHTML = `<div class="country-label">${d.name}</div>`;
+                elementsCache.current[d.slug] = el;
+              }
+
+              if (isTarget && !el.classList.contains('is-target')) {
+                el.classList.add('is-target');
+                el.style.zIndex = '1000';
                 el.innerHTML = `
-                  <div class="country-dot"></div>
-                  <div class="country-popover">
+                  <div class="country-dot target-ping"></div>
+                  <div class="country-popover force-open">
                     <div class="popover-header">
                       <img src="${d.flag}" style="width: 24px; border-radius: 2px; box-shadow: 0 0 5px rgba(0,0,0,0.5);" /> 
                       <span style="font-weight: 800; font-size: 11px; color: white; letter-spacing: 0.5px;">${d.name}</span>
@@ -295,37 +281,17 @@ export default function GlobalCommandCenter() {
                       <div>CAPITAL: <span>${d.capital}</span></div>
                       <div>POP: <span>${d.population}</span></div>
                     </div>
-                    <div class="popover-arrow">ACCESS DOSSIER <span>→</span></div>
+                    <div class="popover-arrow animate-pulse text-[#00f6ff]">ACCESS MAINFRAME <span>→</span></div>
                   </div>
-                  <div class="country-label">${d.name}</div>
+                  <div class="country-label" style="color: #00f6ff; font-weight: 800;">${d.name}</div>
                 `;
-                elementsCache.current[d.slug] = el;
+              } else if (!isTarget && el.classList.contains('is-target')) {
+                el.classList.remove('is-target');
+                el.style.zIndex = '10';
+                el.innerHTML = `<div class="country-label">${d.name}</div>`;
               }
 
-              // 🟢 Update dynamic styles directly on the cached element (insanely fast)
-              el.style.zIndex = isTarget ? '1000' : '10'; 
-              
-              const dot = el.querySelector('.country-dot');
-              if (dot) dot.className = `country-dot ${isTarget ? 'target-ping' : ''}`;
-              
-              const popover = el.querySelector('.country-popover');
-              if (popover) popover.className = `country-popover ${isTarget ? 'force-open' : ''}`;
-              
-              const arrow = el.querySelector('.popover-arrow');
-              if (arrow) {
-                 arrow.className = `popover-arrow ${isTarget ? 'animate-pulse text-[#00f6ff]' : ''}`;
-                 arrow.innerHTML = `${isTarget ? 'ACCESSING MAINFRAME' : 'ACCESS DOSSIER'} <span>→</span>`;
-              }
-              
-              const label = el.querySelector('.country-label');
-              if (label) {
-                 label.style.color = isTarget ? '#00f6ff' : 'rgba(255, 255, 255, 0.7)';
-                 label.style.fontWeight = isTarget ? '800' : '600';
-              }
-
-              // Ensure click handler always has the latest target state
               el.onclick = () => { if (isTarget) navigateToDossier(d.slug); else flyToTarget(d); };
-              
               return el;
             }}
             onZoom={(pov: any) => setIsZoomedIn(pov.altitude < 1.8)}
