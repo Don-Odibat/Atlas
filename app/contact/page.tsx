@@ -1,119 +1,80 @@
+// @ts-nocheck
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import TrustFooter from "../../components/TrustFooter";
 
-export default function ContactUs() {
+export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-black text-gray-300 font-sans selection:bg-white/20 relative overflow-y-auto">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-blue-500/30">
       
-      {/* Background Ambience */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
-      </div>
-
-      {/* Top Navigation */}
-      <nav className="relative z-50 w-full px-8 md:px-12 pt-8 pb-4 flex justify-between items-center border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 shadow-2xl">
-        <Link href="/" className="text-[10px] font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
-          <span className="text-blue-500">←</span> Return to Mainframe
+      {/* TOP NAVIGATION BANNER */}
+      <nav className="w-full border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
+        <Link href="/" className="text-xl font-black tracking-tighter hover:text-blue-400 transition-colors">
+          EARTH<span className="text-blue-500">LOOKUP</span>
         </Link>
-        <h1 className="text-xl font-black tracking-tighter m-0 p-0 leading-none select-none text-white">
-            EARTH<span className="text-blue-500">LOOKUP</span>
-        </h1>
+        <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+          Intelligence Core / Contact
+        </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="relative z-10 max-w-5xl mx-auto p-8 md:p-16">
+      {/* CONTACT CONTENT */}
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-20 flex flex-col gap-12">
         
-        <header className="mb-16 border-b border-white/10 pb-8">
-          <p className="text-blue-500 font-black tracking-widest uppercase mb-4 text-sm">Secure Communications</p>
-          <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Contact Command</h1>
-          <p className="text-gray-400 text-sm tracking-wide">Global Support, Business Inquiries, and NGO Partnerships</p>
+        <header className="text-center space-y-4">
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
+            ESTABLISH <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">COMMS.</span>
+          </h1>
+          <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto">
+            Got a feature request? Found a bug in the matrix? Just want to say EarthLookup is amazing for knowing the world? We want to hear from you.
+          </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
-          
-          {/* Left Column: Contact Info */}
-          <div className="space-y-10">
-            <section>
-              <h2 className="text-2xl font-bold text-white mb-4">Establish a Connection</h2>
-              <p className="text-sm font-light leading-relaxed mb-6">
-                Whether you are a university researcher utilizing our dossiers, an educator integrating the mainframe into your curriculum, or a user reporting a data anomaly, our terminal is open. Please allow 24-48 hours for a response from our engineering team.
-              </p>
-            </section>
-
-            <section className="space-y-6">
-              <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
-                <p className="text-[10px] uppercase tracking-widest text-blue-500 font-bold mb-1">General Support & Data Correction</p>
-                <p className="text-white text-lg">support@earthlookup.com</p>
-              </div>
-              
-              <div className="bg-white/5 border border-blue-500/30 p-5 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-1">NGO & Humanitarian Partnerships</p>
-                <p className="text-sm font-light leading-relaxed mb-2">
-                  EarthLookup is actively expanding our verified humanitarian network. If you represent an apolitical, internationally recognized non-profit operating in an active crisis zone and wish to be integrated into our specific country dossiers, contact our integration team directly.
-                </p>
-                <p className="text-white font-medium">ngo-integration@earthlookup.com</p>
-              </div>
-            </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* DIRECT EMAIL CARD */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-colors flex flex-col justify-center items-center text-center">
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-400"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+            </div>
+            <h2 className="text-2xl font-bold mb-2 uppercase tracking-wider">Direct Intel</h2>
+            <p className="text-gray-400 text-sm mb-6">Send an email directly to the executive team at Don Systems Holding.</p>
+            <a href="mailto:don.odibat@gmail.com" className="text-blue-400 font-bold text-lg hover:text-white transition-colors">don.odibat@gmail.com</a>
           </div>
 
-          {/* Right Column: Contact Form */}
-          <div>
-            <form className="bg-black/50 border border-white/10 p-8 rounded-2xl shadow-2xl backdrop-blur-sm space-y-6">
-              
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Identification (Name)</label>
-                <input 
-                  type="text" 
-                  placeholder="Enter your full name" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-600"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Return Address (Email)</label>
-                <input 
-                  type="email" 
-                  placeholder="Enter your email address" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-600"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Subject Directive</label>
-                <select className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
-                  <option value="general">General Inquiry</option>
-                  <option value="data">Data Correction Request</option>
-                  <option value="ngo">NGO Partnership</option>
-                  <option value="business">Business / Media</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Message Payload</label>
-                <textarea 
-                  rows={5}
-                  placeholder="Enter your message transmission here..." 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-600 resize-none"
-                ></textarea>
-              </div>
-
-              <button 
-                type="button" 
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold tracking-widest uppercase text-xs py-4 rounded-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)]"
-              >
-                Transmit Message
-              </button>
-              
-            </form>
+          {/* GLOBAL HQ CARD */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-blue-500/50 transition-colors flex flex-col justify-center items-center text-center">
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-400"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+            </div>
+            <h2 className="text-2xl font-bold mb-2 uppercase tracking-wider">Global HQ</h2>
+            <p className="text-gray-400 text-sm mb-6">The command center where the code is written and the servers are monitored.</p>
+            <address className="not-italic text-white font-mono">
+              Don Systems Holding<br/>
+              Tupelo, MS<br/>
+              USA 38801
+            </address>
           </div>
-
         </div>
 
-        <footer className="mt-20 pt-8 border-t border-white/10 text-center">
-          <p className="text-gray-500 text-xs uppercase tracking-widest">EarthLookup Intelligence Systems © 2026. All Rights Reserved.</p>
-        </footer>
+        {/* SUPPORT CARD */}
+        <section className="bg-gradient-to-br from-blue-900/20 to-black border border-blue-500/20 rounded-2xl p-10 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+          <div>
+            <h2 className="text-2xl font-bold mb-2 uppercase tracking-wider text-white">Support The Data Engine</h2>
+            <p className="text-gray-400 text-sm max-w-md">
+              EarthLookup brings massive info into one place. If you rely on our high-speed geospatial rendering or intelligence dossiers, help Don keep the servers lightning fast.
+            </p>
+          </div>
+          <a href="https://buymeacoffee.com/DonShehab" target="_blank" className="bg-[#FFDD00] text-black font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(255,221,0,0.3)] hover:scale-105 transition-transform whitespace-nowrap">
+            Buy Don a Coffee ☕
+          </a>
+        </section>
 
       </main>
+
+      {/* UNIVERSAL FOOTER */}
+      <TrustFooter />
+      
     </div>
   );
 }
