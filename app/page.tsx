@@ -20,8 +20,8 @@ export default function GlobalCommandCenter() {
 
   const router = useRouter();
   const globeRef = useRef<any>(null);
-  const overlayRef = useRef<HTMLDivElement>(null); // 🟢 ADDED: Ref for the pure React overlay
 
+  // 🟢 EDITED: Pulled the mobile camera further back (4.8) so it fits perfectly and doesn't look zoomed in.
   const getInitialAltitude = (w: number) => (w < 768 ? 4.8 : 2.2);
 
   useEffect(() => {
@@ -88,30 +88,6 @@ export default function GlobalCommandCenter() {
         setNations(formatted);
       });
   }, []);
-
-  // 🟢 ADDED: High-performance coordinate tracking loop. Runs entirely outside of React state to prevent lag.
-  useEffect(() => {
-    if (!selectedTarget || !globeRef.current) return;
-
-    let animationFrameId: number;
-    const updatePosition = () => {
-      if (globeRef.current && overlayRef.current) {
-        try {
-          const coords = globeRef.current.getScreenCoords(selectedTarget.lat, selectedTarget.lng);
-          if (coords) {
-            // Centers the dot perfectly on the converted X/Y coordinates
-            overlayRef.current.style.transform = `translate(${coords.x}px, ${coords.y}px) translate(-50%, -50%)`;
-          }
-        } catch (e) {
-          // Silent catch if canvas isn't ready
-        }
-      }
-      animationFrameId = requestAnimationFrame(updatePosition);
-    };
-    
-    updatePosition();
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [selectedTarget, dimensions]);
 
   const filteredNations = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -196,6 +172,7 @@ export default function GlobalCommandCenter() {
           <Link href="/contact" className="text-[9px] font-bold text-gray-400 hover:text-white uppercase tracking-widest">Contact</Link>
           <Link href="/policy" className="text-[9px] font-bold text-gray-400 hover:text-white uppercase tracking-widest">Privacy</Link>
         </div>
+        {/* 🟢 EDITED: Locked in your exact footer text */}
         <div className="text-[8px] font-mono text-gray-500 font-bold tracking-widest uppercase">
           2025 all right received Don Odibat - Don Systems Holding
         </div>
@@ -236,8 +213,6 @@ export default function GlobalCommandCenter() {
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.3)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : 'rgba(30, 58, 138, 0.4)'}
             polygonHoverColor={() => 'rgba(0, 246, 255, 0.3)'}
-            
-            // 🟢 RESTORED: Your original logic that maps 100% of the countries correctly
             onPolygonClick={(poly: any) => {
                 let target = nations.find((n: any) => n.name === poly.properties.name);
                 if (!target) {
@@ -259,33 +234,32 @@ export default function GlobalCommandCenter() {
             labelResolution={2}
             onLabelClick={(d: any) => flyToTarget(d)}
 
-            // 🟢 REMOVED: All the htmlElementsData properties that were crashing the WebGL canvas
+            htmlElementsData={selectedTarget ? [selectedTarget] : []}
+            htmlLat="lat"
+            htmlLng="lng"
+            htmlElement={(d: any) => {
+              const el = document.createElement('div');
+              el.className = 'country-wrapper';
+              el.innerHTML = `
+                <div class="country-dot"></div>
+                <div class="country-popover">
+                  <div class="popover-header">
+                    <img src="${d.flag}" style="width: 24px; border-radius: 2px;" /> 
+                    <span style="font-weight: 800; font-size: 11px; color: white;">${d.name}</span>
+                  </div>
+                  <div class="popover-data">
+                    <div>CAPITAL: <span>${d.capital}</span></div>
+                    <div>POP: <span>${d.population}</span></div>
+                  </div>
+                  <div class="popover-arrow">ACCESS DOSSIER <span>→</span></div>
+                </div>
+              `;
+              el.onclick = () => navigateToDossier(d.slug);
+              return el;
+            }}
           />
         )}
       </div>
-
-      {/* 🟢 ADDED: Pure React Overlay rendering based on 3D coordinates. No memory leaks. */}
-      {selectedTarget && (
-        <div 
-          ref={overlayRef}
-          className="country-wrapper absolute top-0 left-0 pointer-events-auto"
-          style={{ willChange: 'transform' }} // Tells browser to hardware-accelerate this div
-          onClick={() => navigateToDossier(selectedTarget.slug)}
-        >
-          <div className="country-dot"></div>
-          <div className="country-popover">
-            <div className="popover-header">
-              <img src={selectedTarget.flag} style={{ width: '24px', borderRadius: '2px' }} alt="Flag" /> 
-              <span style={{ fontWeight: 800, fontSize: '11px', color: 'white' }}>{selectedTarget.name}</span>
-            </div>
-            <div className="popover-data">
-              <div>CAPITAL: <span>{selectedTarget.capital}</span></div>
-              <div>POP: <span>{selectedTarget.population}</span></div>
-            </div>
-            <div className="popover-arrow">ACCESS DOSSIER <span>→</span></div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
