@@ -13,6 +13,7 @@ export default function GlobalCommandCenter() {
   const [isFocused, setIsFocused] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [nations, setNations] = useState<any[]>([]);
+  const [nationLookup, setNationLookup] = useState<Record<string, any>>({}); // 🟢 High-speed dictionary restored
   const [worldPolygons, setWorldPolygons] = useState<any[]>([]);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
@@ -20,6 +21,7 @@ export default function GlobalCommandCenter() {
 
   const router = useRouter();
   const globeRef = useRef<any>(null);
+  const elementsCache = useRef<Record<string, HTMLElement>>({}); // 🟢 DOM Element Cache to stop memory leaks
 
   // PRO MOD: Mobile Precision Scaling
   const getInitialAltitude = (w: number) => (w < 768 ? 3.5 : 2.2);
@@ -67,6 +69,8 @@ export default function GlobalCommandCenter() {
     fetch("https://restcountries.com/v3.1/all?fields=name,latlng,cca2,flags,capital,population")
       .then((res: any) => res.json())
       .then((data: any) => {
+        const lookupMap: Record<string, any> = {};
+
         const formatted = data
           .filter((c: any) => c.latlng?.length === 2 && c.name.common !== "Israel") 
           .map((c: any) => {
@@ -76,7 +80,7 @@ export default function GlobalCommandCenter() {
             if (c.cca2 === 'JO') aliases.push('JOR', 'Hashemite Kingdom of Jordan');
             if (c.cca2 === 'PS') aliases.push('Palestine State', 'Gaza');
             
-            return {
+            const countryData = {
               lat: c.latlng[0],
               lng: c.latlng[1],
               name: c.name.common,
@@ -87,8 +91,17 @@ export default function GlobalCommandCenter() {
               population: new Intl.NumberFormat().format(c.population || 0),
               searchTerms: aliases.map((a: string) => a.toLowerCase())
             };
+
+            // Build instant lookup dictionary
+            lookupMap[countryData.name.toLowerCase()] = countryData;
+            countryData.searchTerms.forEach((term: string) => {
+                lookupMap[term] = countryData;
+            });
+
+            return countryData;
           });
         setNations(formatted);
+        setNationLookup(lookupMap);
       });
   }, []);
 
@@ -230,47 +243,77 @@ export default function GlobalCommandCenter() {
             polygonSideColor={() => 'rgba(0, 0, 0, 0.2)'}
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.3)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : 'rgba(30, 58, 138, 0.4)'}
-            
-            /* PRO MOD: Glows bright cyan when you hover inside the border */
             polygonHoverColor={() => 'rgba(0, 246, 255, 0.3)'}
             
-            /* PRO MOD: Bulletproof border clicking */
+            // PRO MOD: Bulletproof border clicking with high-speed lookup
             onPolygonClick={(poly: any) => {
-                let target = nations.find((n: any) => n.name === poly.properties.name);
+                const clickedName = poly.properties.name.toLowerCase();
+                let target = nationLookup[clickedName];
+                
                 if (!target) {
-                    target = nations.find((n: any) => n.searchTerms.includes(poly.properties.name.toLowerCase()));
+                    target = nations.find((n: any) => n.searchTerms.includes(clickedName));
                 }
+                
                 if (target) {
                     if (selectedTarget && selectedTarget.name === target.name) navigateToDossier(target.slug);
                     else flyToTarget(target);
                 }
             }}
+            
             htmlElementsData={nations}
             htmlLat="lat"
             htmlLng="lng"
             htmlElement={(d: any) => {
               const isTarget = selectedTarget && selectedTarget.slug === d.slug;
-              const el = document.createElement('div');
-              el.className = 'country-wrapper';
+              
+              // 🟢 The Cache System: Only create the heavy HTML once per country
+              let el = elementsCache.current[d.slug];
+              
+              if (!el) {
+                el = document.createElement('div');
+                el.className = 'country-wrapper';
+                el.innerHTML = `
+                  <div class="country-dot"></div>
+                  <div class="country-popover">
+                    <div class="popover-header">
+                      <img src="${d.flag}" style="width: 24px; border-radius: 2px; box-shadow: 0 0 5px rgba(0,0,0,0.5);" /> 
+                      <span style="font-weight: 800; font-size: 11px; color: white; letter-spacing: 0.5px;">${d.name}</span>
+                    </div>
+                    <div class="popover-data">
+                      <div>CAPITAL: <span>${d.capital}</span></div>
+                      <div>POP: <span>${d.population}</span></div>
+                    </div>
+                    <div class="popover-arrow">ACCESS DOSSIER <span>→</span></div>
+                  </div>
+                  <div class="country-label">${d.name}</div>
+                `;
+                elementsCache.current[d.slug] = el;
+              }
+
+              // 🟢 Update dynamic styles directly on the cached element (insanely fast)
               el.style.zIndex = isTarget ? '1000' : '10'; 
               
-              // PRO MOD: Restored the detailed popover dossier
-              el.innerHTML = `
-                <div class="country-dot ${isTarget ? 'target-ping' : ''}"></div>
-                <div class="country-popover ${isTarget ? 'force-open' : ''}">
-                  <div class="popover-header">
-                    <img src="${d.flag}" style="width: 24px; border-radius: 2px; box-shadow: 0 0 5px rgba(0,0,0,0.5);" /> 
-                    <span style="font-weight: 800; font-size: 11px; color: white; letter-spacing: 0.5px;">${d.name}</span>
-                  </div>
-                  <div class="popover-data">
-                    <div>CAPITAL: <span>${d.capital}</span></div>
-                    <div>POP: <span>${d.population}</span></div>
-                  </div>
-                  <div class="popover-arrow ${isTarget ? 'animate-pulse text-[#00f6ff]' : ''}">${isTarget ? 'ACCESSING MAINFRAME' : 'ACCESS DOSSIER'} <span>→</span></div>
-                </div>
-                <div class="country-label" style="${isTarget ? 'color: #00f6ff; font-weight: 800;' : ''}">${d.name}</div>
-              `;
+              const dot = el.querySelector('.country-dot');
+              if (dot) dot.className = `country-dot ${isTarget ? 'target-ping' : ''}`;
+              
+              const popover = el.querySelector('.country-popover');
+              if (popover) popover.className = `country-popover ${isTarget ? 'force-open' : ''}`;
+              
+              const arrow = el.querySelector('.popover-arrow');
+              if (arrow) {
+                 arrow.className = `popover-arrow ${isTarget ? 'animate-pulse text-[#00f6ff]' : ''}`;
+                 arrow.innerHTML = `${isTarget ? 'ACCESSING MAINFRAME' : 'ACCESS DOSSIER'} <span>→</span>`;
+              }
+              
+              const label = el.querySelector('.country-label');
+              if (label) {
+                 label.style.color = isTarget ? '#00f6ff' : 'rgba(255, 255, 255, 0.7)';
+                 label.style.fontWeight = isTarget ? '800' : '600';
+              }
+
+              // Ensure click handler always has the latest target state
               el.onclick = () => { if (isTarget) navigateToDossier(d.slug); else flyToTarget(d); };
+              
               return el;
             }}
             onZoom={(pov: any) => setIsZoomedIn(pov.altitude < 1.8)}
