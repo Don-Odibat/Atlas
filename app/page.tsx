@@ -19,8 +19,6 @@ export default function GlobalCommandCenter() {
   const [selectedTarget, setSelectedTarget] = useState<any>(null);
 
   const router = useRouter();
-  
-  // FIXED: Added null as the initial value to satisfy the Vercel build error
   const globeRef = useRef<any>(null);
 
   useEffect(() => {
@@ -116,9 +114,10 @@ export default function GlobalCommandCenter() {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return [];
     
-    return nations.filter(n => 
+    // 🟢 FIXED: Added (n: any) and (term: string) to satisfy Vercel's strict compiler
+    return nations.filter((n: any) => 
         n.name.toLowerCase().startsWith(query) || 
-        n.searchTerms.some(term => term.startsWith(query)) || 
+        n.searchTerms.some((term: string) => term.startsWith(query)) || 
         n.code.toLowerCase() === query
     );
   }, [searchQuery, nations]);
@@ -215,7 +214,7 @@ export default function GlobalCommandCenter() {
         </div>
         {searchQuery && isFocused && (
           <div className="mt-2 bg-black/90 border border-white/10 rounded-xl max-h-60 overflow-y-auto backdrop-blur-xl shadow-2xl pointer-events-auto">
-            {filteredNations.slice(0, 10).map(n => (
+            {filteredNations.slice(0, 10).map((n: any) => (
               <button key={n.slug} onClick={() => flyToTarget(n)} className="w-full text-left px-4 py-3 hover:bg-blue-500/10 text-sm flex items-center gap-3 border-b border-white/5 last:border-0">
                 <img src={n.flag} className="w-4 h-auto rounded-sm" alt="" /> 
                 <div className="flex flex-col"><span className="font-bold">{n.name}</span><span className="text-[9px] text-gray-500 uppercase tracking-tighter">{n.code}</span></div>
