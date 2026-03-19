@@ -241,7 +241,6 @@ export default function GlobalCommandCenter() {
             polygonSideColor={() => 'rgba(0, 0, 0, 0.4)'}
             polygonCapColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? 'rgba(0, 246, 255, 0.3)' : 'rgba(10, 10, 10, 0.6)'}
             polygonStrokeColor={(poly: any) => selectedTarget && poly.properties.name === selectedTarget.name ? '#00f6ff' : '#1e3a8a'}
-            polygonHoverColor={() => 'rgba(59, 130, 246, 0.3)'}
             onPolygonClick={(poly: any) => {
                 const target = nations.find(n => n.name === poly.properties.name);
                 if (target) {
