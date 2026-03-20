@@ -38,26 +38,21 @@ const translations: Record<string, Record<string, string>> = {
   FR: { back: "RETOUR AU GLOBE", map: "CARTE", play: "JOUER L'HYMNE", pause: "TRANSMISSION...", anthemDefault: "Hymne National", officialName: "Nom Officiel", native: "Nom Local", insignia: "Insigne Officiel", people: "Le Peuple & Démographie", pop: "Compteur de Population en Direct", density: "Densité de Population", lang: "Langues Officielles", demonym: "Citoyens", geo: "Géographie & Climat", cap: "Capitale", time: "Heure Locale", temp: "Température en Direct", area: "Superficie Totale", region: "Région / Sous-région", borders: "Nations Frontalières", landlocked: "Enclavé", econ: "Macroéconomie", currency: "Monnaie Officielle", fiat: "Taux de Marché Fiat en Direct", crypto: "Taux Crypto en Direct", gini: "Coefficient de Gini", state: "État & Infrastructure", un: "Membre de l'ONU", sov: "Souveraineté", drive: "Sens de Conduite", call: "Indicatif Téléphonique", week: "Début de Semaine", iso: "Codes ISO 3166", tld: "Domaine de Premier Niveau", vehicle: "Plaques d'Immatriculation", hist: "Archives Historiques Déclassifiées", decrypting: "DÉCRYPTAGE DES ARCHIVES...", uplink: "LIAISON SÉCURISÉE ÉTABLIE. HISTOIRE POUR :", adsense: "Zone Google AdSense" }
 };
 
-// 🟢 MECHANICAL UPGRADE: Hyper-accurate Capital-based ticking clock with DST logic
 const LiveClock = memo(({ fallbackTimezones, resolvedTimezone }: { fallbackTimezones: string[], resolvedTimezone?: string }) => {
   const [localTime, setLocalTime] = useState<string>("CALCULATING...");
-  
   useEffect(() => {
     const tick = () => {
       const now = new Date();
-      
       if (resolvedTimezone) {
         try {
           setLocalTime(now.toLocaleTimeString('en-US', { timeZone: resolvedTimezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
           return;
         } catch (e) {}
       }
-      
       if (!fallbackTimezones || fallbackTimezones.length === 0) {
          setLocalTime("N/A");
          return;
       }
-      
       const tzString = fallbackTimezones[0];
       let offsetHours = 0, offsetMinutes = 0;
       if (tzString !== "UTC" && tzString !== "UTC+00:00") {
@@ -67,34 +62,28 @@ const LiveClock = memo(({ fallbackTimezones, resolvedTimezone }: { fallbackTimez
         offsetHours = parseInt(parts[0]) * sign;
         if (parts.length > 1) offsetMinutes = parseInt(parts[1]) * sign;
       }
-      
       const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
       const countryTime = new Date(utc + (3600000 * offsetHours) + (60000 * offsetMinutes));
       setLocalTime(countryTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
     };
-    
     tick();
     const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
   }, [fallbackTimezones, resolvedTimezone]);
-  
   return <p className="text-3xl font-black text-white drop-shadow-lg font-mono tracking-tighter">{localTime}</p>;
 });
 
 const LiveDemographics = memo(({ basePopulation }: { basePopulation: number }) => {
   const [sessionBirths, setSessionBirths] = useState(0);
   const [sessionDeaths, setSessionDeaths] = useState(0);
-  
   useEffect(() => {
     if (!basePopulation) return;
     const birthRateSec = Math.max(1, Math.round(31536000 / (basePopulation * 0.015)));
     const deathRateSec = Math.max(1, Math.round(31536000 / (basePopulation * 0.008)));
-    
     const birthInterval = setInterval(() => setSessionBirths(prev => prev + 1), Math.max(100, birthRateSec * 1000));
     const deathInterval = setInterval(() => setSessionDeaths(prev => prev + 1), Math.max(100, deathRateSec * 1000));
     return () => { clearInterval(birthInterval); clearInterval(deathInterval); };
   }, [basePopulation]);
-
   return (
     <>
       <p className="text-4xl md:text-5xl font-black text-white drop-shadow-lg relative z-10 flex items-baseline gap-2">
@@ -126,10 +115,7 @@ export default function CountryHub() {
   const [liveData, setLiveData] = useState<any>(null);
   const [isFetching, setIsFetching] = useState(true);
   const [exchangeRates, setExchangeRates] = useState<{ usd: string, btc: string } | null>(null);
-  
-  // 🟢 MECHANICAL UPGRADE: Expanded weather state to hold absolute Timezone data
   const [weather, setWeather] = useState<{ tempC: number, timezone: string } | null>(null);
-  
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [historyData, setHistoryData] = useState<string>("");
   const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
@@ -196,34 +182,21 @@ export default function CountryHub() {
         const localRateToUsd = fiatData?.rates?.[currencyCode];
         const btcRate = fiatData?.rates?.BTC;
         if (localRateToUsd) {
-          setExchangeRates({ 
-              usd: (1 / localRateToUsd).toFixed(2),
-              btc: btcRate ? ((1 / localRateToUsd) * btcRate).toFixed(8) : "N/A"
-          });
+          setExchangeRates({ usd: (1 / localRateToUsd).toFixed(2), btc: btcRate ? ((1 / localRateToUsd) * btcRate).toFixed(8) : "N/A" });
         }
       } catch (e) {}
     }
     fetchMarketData();
   }, [liveData]);
 
-  // 🟢 MECHANICAL UPGRADE: Pulling absolute timezone from Capital City GPS coordinates
   useEffect(() => {
     if (!liveData) return;
     const lat = liveData.capitalInfo?.latlng?.[0] || liveData.latlng?.[0];
     const lng = liveData.capitalInfo?.latlng?.[1] || liveData.latlng?.[1];
-    
     if (lat === undefined || lng === undefined) return;
-
     fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`)
       .then(res => res.json())
-      .then(data => {
-        if (data.current_weather) {
-            setWeather({ 
-                tempC: data.current_weather.temperature, 
-                timezone: data.timezone 
-            });
-        }
-      })
+      .then(data => { if (data.current_weather) setWeather({ tempC: data.current_weather.temperature, timezone: data.timezone }); })
       .catch(() => {});
   }, [liveData]);
 
@@ -266,14 +239,10 @@ export default function CountryHub() {
   const flagUrl = liveData?.flags?.svg || "https://flagcdn.com/w320/un.png";
   const bgFlagUrl = liveData?.flags?.svg || "https://flagcdn.com/w1280/un.png";
   const languages = liveData?.languages ? Object.values(liveData.languages).join(", ") : "N/A";
-  
   const rawCountryName = liveData?.name?.common?.toLowerCase() || "";
   const currentAnthemName = ANTHEM_NAMES[rawCountryName] || t('anthemDefault');
-
-  // 🟢 MECHANICAL UPGRADE: Dual-Metric Area & Density calculations
   const popDensityKm = liveData?.area ? (liveData.population / liveData.area).toFixed(1) : "N/A";
   const popDensityMi = liveData?.area ? (liveData.population / (liveData.area * 0.386102)).toFixed(1) : "N/A";
-  
   const giniIndex = liveData?.gini ? String(Object.values(liveData.gini)[0]) : "CLASSIFIED";
   const drivingSide = liveData?.car?.side ? String(liveData.car.side).toUpperCase() : "N/A";
   const tld = liveData?.tld ? liveData.tld.join(", ") : "N/A";
@@ -304,6 +273,11 @@ export default function CountryHub() {
         }
         .animate-breathe { animation: breathe 12s ease-in-out infinite; }
         .glass-panel { background: rgba(10,10,10,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        /* 🟢 NEW: Custom sleek scrollbar for the internal history terminal */
+        .history-scroll::-webkit-scrollbar { width: 6px; }
+        .history-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .history-scroll::-webkit-scrollbar-thumb { background: rgba(234,179,8,0.4); border-radius: 10px; }
+        .history-scroll::-webkit-scrollbar-thumb:hover { background: rgba(234,179,8,0.8); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 10px; }
@@ -346,9 +320,10 @@ export default function CountryHub() {
         </div>
       </nav>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto relative z-10 px-4 md:px-8 py-10 pb-24">
+      {/* 🟢 OVERRIDE: Expanded max-width for the Dual-Terminal layout */}
+      <main className="flex-1 w-full max-w-[1600px] mx-auto relative z-10 px-4 md:px-8 py-10 pb-24 flex flex-col">
         
-        <div className={`flex flex-col md:flex-row items-center md:items-end justify-between gap-8 mb-16 border-b border-white/10 pb-10 ${activeLang === 'AR' ? 'md:flex-row-reverse' : ''}`}>
+        <div className={`flex flex-col md:flex-row items-center md:items-end justify-between gap-8 mb-12 border-b border-white/10 pb-10 ${activeLang === 'AR' ? 'md:flex-row-reverse' : ''}`}>
             <div className={`flex flex-col md:flex-row items-center gap-6 text-center ${activeLang === 'AR' ? 'md:flex-row-reverse md:text-right' : 'md:text-left'}`}>
                 <img src={flagUrl} alt="Flag" className="w-32 md:w-48 h-auto rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10" />
                 <div>
@@ -380,176 +355,192 @@ export default function CountryHub() {
             </div>
         </div>
 
-        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-            <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('people')}</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
-            <div className="bg-black/60 border border-blue-900/30 p-8 rounded-3xl lg:col-span-2 shadow-lg relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full group-hover:bg-blue-500/10 transition-all"></div>
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase">{t('pop')}</h3>
-                {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
-            </div>
-            {/* 🟢 DUAL-METRIC DENSITY */}
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('density')}</h3>
-                <p className="text-3xl font-black text-white">{popDensityKm} <span className="text-sm font-light text-gray-400">/ km²</span></p>
-                <p className="text-xs font-mono text-gray-400 mt-1">{popDensityMi} / sq mi</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl lg:col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('lang')}</h3>
-                <p className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">{languages}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('demonym')}</h3>
-                <p className="text-lg font-bold text-blue-400 uppercase">{liveData?.demonyms?.eng?.m || "N/A"}</p>
-            </div>
-        </div>
-
-        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-            <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('geo')}</h2>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('cap')}</h3>
-                <p className="text-3xl md:text-4xl font-black text-white">{liveData?.capital ? liveData.capital[0] : "N/A"}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('time')}</h3>
-                {liveData ? <LiveClock fallbackTimezones={liveData.timezones} resolvedTimezone={weather?.timezone} /> : <span>...</span>}
-            </div>
-            {/* 🟢 DUAL-METRIC TEMP */}
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('temp')}</h3>
-                <p className="text-3xl font-black text-white">{weather ? `${weather.tempC}°C` : "..."}</p>
-                <p className="text-xs font-mono text-gray-400 mt-1">{weather ? `${Math.round((weather.tempC * 9/5) + 32)}°F` : "..."}</p>
-            </div>
+        {/* 🟢 OVERRIDE: The Dual-Column Split Engine */}
+        <div className={`flex flex-col xl:flex-row gap-8 xl:gap-12 w-full items-start ${activeLang === 'AR' ? 'xl:flex-row-reverse' : ''}`}>
             
-            {/* 🟢 DUAL-METRIC AREA */}
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('area')}</h3>
-                <p className="text-2xl font-bold text-white">{liveData ? `${liveData.area.toLocaleString()} km²` : "..."}</p>
-                <p className="text-xs font-mono text-gray-400 mt-1">{liveData ? `${Math.round(liveData.area * 0.386102).toLocaleString()} sq mi` : "..."}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('region')}</h3>
-                <p className="text-xl font-bold text-white">{liveData?.region} <span className="text-gray-400 font-light">/ {liveData?.subregion}</span></p>
-            </div>
-
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-3 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('borders')}</h3>
-                <p className="text-sm font-mono text-white leading-relaxed">{liveData?.borders ? liveData.borders.join(", ") : "ISOLATED LANDMASS / ISLAND"}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center items-center text-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('landlocked')}</h3>
-                <p className={`text-2xl font-black ${liveData?.landlocked ? 'text-red-400' : 'text-blue-400'}`}>{liveData?.landlocked ? "YES" : "NO"}</p>
-            </div>
-        </div>
-
-        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-            <div className="w-1 h-8 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('econ')}</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('currency')}</h3>
-                <p className="text-3xl font-black text-white">{currencyInfo ? `${currencyInfo.symbol} ${currencyInfo.name}` : "..."}</p>
-                <p className="text-sm font-mono text-gray-400 mt-2">CODE: {currencyCode}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-green-500/50">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = USD</h3>
-                <p className="text-4xl font-black text-green-400">${exchangeRates?.usd || "..."}</p>
-                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('fiat')}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-[#F7931A]/50">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = BTC</h3>
-                <p className="text-3xl font-black text-[#F7931A]">₿ {exchangeRates?.btc || "..."}</p>
-                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('crypto')}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 md:col-span-3">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('gini')}</h3>
-                <p className={`text-2xl font-bold ${giniIndex === "CLASSIFIED" ? 'text-gray-500' : 'text-blue-400'}`}>{giniIndex}</p>
-            </div>
-        </div>
-
-        <div className={`w-full flex items-center gap-4 mb-12 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-            <div className="w-1 h-8 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('state')}</h2>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('un')}</h3>
-                <p className={`text-2xl font-black ${liveData?.unMember ? 'text-green-400' : 'text-red-400'}`}>{liveData?.unMember ? "VERIFIED" : "UNVERIFIED"}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('sov')}</h3>
-                <p className={`text-xl font-black ${liveData?.independent ? 'text-blue-400' : 'text-gray-500'}`}>{liveData?.independent ? "INDEPENDENT" : "DEPENDENT"}</p>
-            </div>
-            <div className={`bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex justify-between items-center ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-                <div>
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('drive')}</h3>
-                  <p className="text-3xl font-bold text-blue-400">{drivingSide}</p>
+            {/* 🟢 LEFT COLUMN: DATA GRIDS */}
+            <div className="flex-1 w-full flex flex-col min-w-0">
+              
+                {/* 1. PEOPLE */}
+                <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                    <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('people')}</h2>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-            </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
+                    <div className="bg-black/60 border border-blue-900/30 p-8 rounded-3xl sm:col-span-2 shadow-lg relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full group-hover:bg-blue-500/10 transition-all"></div>
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase">{t('pop')}</h3>
+                        {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('density')}</h3>
+                        <p className="text-3xl font-black text-white">{popDensityKm} <span className="text-sm font-light text-gray-400">/ km²</span></p>
+                        <p className="text-xs font-mono text-gray-400 mt-1">{popDensityMi} / sq mi</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('demonym')}</h3>
+                        <p className="text-lg font-bold text-blue-400 uppercase">{liveData?.demonyms?.eng?.m || "N/A"}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl sm:col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('lang')}</h3>
+                        <p className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">{languages}</p>
+                    </div>
+                </div>
 
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('call')}</h3>
-                <p className="text-4xl font-mono text-white">+{phoneCode}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('week')}</h3>
-                <p className="text-4xl font-bold text-white capitalize">{liveData?.startOfWeek || "N/A"}</p>
-            </div>
+                {/* 2. GEOGRAPHY */}
+                <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                    <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('geo')}</h2>
+                </div>
 
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('iso')}</h3>
-                <p className="text-2xl font-mono text-white">{liveData?.cca2} / {liveData?.cca3}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('tld')}</h3>
-                <p className="text-2xl font-mono text-blue-400">{tld}</p>
-            </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('vehicle')}</h3>
-                <p className="text-2xl font-mono text-white">{liveData?.car?.signs ? liveData.car.signs.join(", ") : "N/A"}</p>
-            </div>
-        </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('cap')}</h3>
+                        <p className="text-3xl md:text-4xl font-black text-white">{liveData?.capital ? liveData.capital[0] : "N/A"}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('time')}</h3>
+                        {liveData ? <LiveClock fallbackTimezones={liveData.timezones} resolvedTimezone={weather?.timezone} /> : <span>...</span>}
+                    </div>
+                    
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('area')}</h3>
+                        <p className="text-2xl font-bold text-white">{liveData ? `${liveData.area.toLocaleString()} km²` : "..."}</p>
+                        <p className="text-xs font-mono text-gray-400 mt-1">{liveData ? `${Math.round(liveData.area * 0.386102).toLocaleString()} sq mi` : "..."}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('temp')}</h3>
+                        <p className="text-3xl font-black text-white">{weather ? `${weather.tempC}°C` : "..."}</p>
+                        <p className="text-xs font-mono text-gray-400 mt-1">{weather ? `${Math.round((weather.tempC * 9/5) + 32)}°F` : "..."}</p>
+                    </div>
 
-        <div className={`w-full flex items-center gap-4 mb-6 mt-12 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-            <div className="w-1 h-8 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('hist')}</h2>
-        </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-3 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('region')}</h3>
+                        <p className="text-xl font-bold text-white">{liveData?.region} <span className="text-gray-400 font-light">/ {liveData?.subregion}</span></p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('borders')}</h3>
+                        <p className="text-sm font-mono text-white leading-relaxed">{liveData?.borders ? liveData.borders.join(", ") : "ISOLATED LANDMASS / ISLAND"}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center items-center text-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('landlocked')}</h3>
+                        <p className={`text-2xl font-black ${liveData?.landlocked ? 'text-red-400' : 'text-blue-400'}`}>{liveData?.landlocked ? "YES" : "NO"}</p>
+                    </div>
+                </div>
 
-        <div className={`bg-black/80 border border-yellow-500/30 p-6 md:p-12 rounded-3xl mb-16 relative overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.05)] ${activeLang === 'AR' ? 'text-right' : 'text-left'}`}>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
+                {/* 3. MACROECONOMICS */}
+                <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-1 h-8 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+                    <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('econ')}</h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl sm:col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('currency')}</h3>
+                        <p className="text-3xl font-black text-white">{currencyInfo ? `${currencyInfo.symbol} ${currencyInfo.name}` : "..."}</p>
+                        <p className="text-sm font-mono text-gray-400 mt-2">CODE: {currencyCode}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-green-500/50">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = USD</h3>
+                        <p className="text-4xl font-black text-green-400">${exchangeRates?.usd || "..."}</p>
+                        <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('fiat')}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-[#F7931A]/50">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = BTC</h3>
+                        <p className="text-3xl font-black text-[#F7931A]">₿ {exchangeRates?.btc || "..."}</p>
+                        <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('crypto')}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl sm:col-span-2">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('gini')}</h3>
+                        <p className={`text-2xl font-bold ${giniIndex === "CLASSIFIED" ? 'text-gray-500' : 'text-blue-400'}`}>{giniIndex}</p>
+                    </div>
+                </div>
+
+                {/* 4. STATE */}
+                <div className={`w-full flex items-center gap-4 mb-12 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-1 h-8 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
+                    <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('state')}</h2>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('un')}</h3>
+                        <p className={`text-2xl font-black ${liveData?.unMember ? 'text-green-400' : 'text-red-400'}`}>{liveData?.unMember ? "VERIFIED" : "UNVERIFIED"}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('sov')}</h3>
+                        <p className={`text-xl font-black ${liveData?.independent ? 'text-blue-400' : 'text-gray-500'}`}>{liveData?.independent ? "INDEPENDENT" : "DEPENDENT"}</p>
+                    </div>
+                    <div className={`bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex justify-between items-center ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                        <div>
+                          <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('drive')}</h3>
+                          <p className="text-3xl font-bold text-blue-400">{drivingSide}</p>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                    </div>
+
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('call')}</h3>
+                        <p className="text-4xl font-mono text-white">+{phoneCode}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('week')}</h3>
+                        <p className="text-4xl font-bold text-white capitalize">{liveData?.startOfWeek || "N/A"}</p>
+                    </div>
+
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('iso')}</h3>
+                        <p className="text-2xl font-mono text-white">{liveData?.cca2} / {liveData?.cca3}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('tld')}</h3>
+                        <p className="text-2xl font-mono text-blue-400">{tld}</p>
+                    </div>
+                    <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 md:col-span-3 flex flex-col justify-center">
+                        <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('vehicle')}</h3>
+                        <p className="text-2xl font-mono text-white">{liveData?.car?.signs ? liveData.car.signs.join(", ") : "N/A"}</p>
+                    </div>
+                </div>
+
+            </div>
             
-            {isHistoryLoading ? (
-               <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest text-center">
-                  <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="animate-pulse">{t('decrypting')}</p>
-               </div>
-            ) : (
-               <article className="prose prose-invert max-w-none">
-                 <p className="text-yellow-500 font-mono text-xs tracking-widest uppercase mb-8 border-b border-yellow-500/20 pb-4">
-                   &gt; {t('uplink')} {displayCountryName}
-                 </p>
-                 {renderHistory()}
-               </article>
-            )}
-        </div>
+            {/* 🟢 RIGHT COLUMN: STICKY HISTORY TERMINAL & ADSENSE */}
+            <div className="w-full xl:w-[40%] flex flex-col shrink-0 sticky top-32 pb-10">
+                <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-1 h-8 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
+                    <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('hist')}</h2>
+                </div>
 
-        <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-16 mt-8">
-            <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
-            <span className={`text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
-              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-              {t('adsense')}
-            </span>
+                {/* 🟢 THE SCROLLABLE GLASS BOX */}
+                <div className={`bg-black/80 border border-yellow-500/30 p-6 md:p-10 rounded-3xl mb-8 relative shadow-[0_0_40px_rgba(234,179,8,0.05)] h-[65vh] overflow-y-auto history-scroll ${activeLang === 'AR' ? 'text-right' : 'text-left'}`}>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
+                    
+                    {isHistoryLoading ? (
+                       <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest text-center">
+                          <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                          <p className="animate-pulse">{t('decrypting')}</p>
+                       </div>
+                    ) : (
+                       <article className="prose prose-invert max-w-none">
+                         <p className="text-yellow-500 font-mono text-xs tracking-widest uppercase mb-8 border-b border-yellow-500/20 pb-4 sticky top-0 bg-black/90 pt-2 backdrop-blur-md z-10">
+                           &gt; {t('uplink')} {displayCountryName}
+                         </p>
+                         {renderHistory()}
+                       </article>
+                    )}
+                </div>
+
+                {/* 🟢 ALWAYS-VISIBLE ADSENSE ZONE */}
+                <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
+                    <span className={`text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                      {t('adsense')}
+                    </span>
+                </div>
+            </div>
+
         </div>
 
       </main>
