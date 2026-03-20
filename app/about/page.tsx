@@ -4,79 +4,124 @@ import React from "react";
 import Link from "next/link";
 import TrustFooter from "../../components/TrustFooter";
 
-export default function AboutPage() {
+export default function AboutCommand() {
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col selection:bg-blue-500/30">
+    <div className="min-h-screen w-screen bg-black text-white font-sans selection:bg-blue-500/30 relative overflow-x-hidden flex flex-col">
       
-      {/* TOP NAVIGATION BANNER */}
-      <nav className="w-full border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-black tracking-tighter hover:text-blue-400 transition-colors">
-          EARTH<span className="text-blue-500">LOOKUP</span>
-        </Link>
-        <div className="text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
-          Intelligence Core / About
+      {/* BACKGROUND STYLING */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .glass-panel { background: rgba(10,10,10,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
+      `}} />
+
+      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black"></div>
+
+      {/* TOP COMMAND HEADER (Sticky) */}
+      <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 px-4 md:px-8 py-4 flex justify-between items-center shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+        <div className="flex items-center gap-6">
+            <Link href="/" className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
+              <span className="text-blue-500 text-lg">←</span> BACK TO GLOBE
+            </Link>
+        </div>
+        <div className="text-[9px] md:text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            SYSTEM OVERVIEW
         </div>
       </nav>
 
-      {/* MASSIVE CONTENT AREA */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-20 flex flex-col gap-16">
+      {/* MAIN ABOUT FEED */}
+      <main className="flex-1 w-full max-w-6xl mx-auto relative z-10 px-4 md:px-8 py-12 pb-24">
         
-        <header className="text-center space-y-6">
-          <div className="inline-block bg-blue-900/30 border border-blue-500/50 text-blue-400 text-xs font-black uppercase tracking-[0.3em] px-4 py-2 rounded-full mb-4">
-            A Don Systems Holding Project
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
-            Exploring The <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Globe Together.</span>
-          </h1>
-          <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
-            Massive info in one place. Welcome to the ultimate geography encyclopedia designed for explorers, students, and data-driven minds.
-          </p>
-        </header>
-
-        <section className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl backdrop-blur-sm">
-          <h2 className="text-2xl font-bold mb-6 text-blue-400 uppercase tracking-wider">The EarthLookup Mission</h2>
-          <div className="space-y-6 text-gray-300 leading-loose">
-            <p>
-              Built from the ground up by <strong>Don Odibat</strong> in Tupelo, MS, EarthLookup.com was engineered to be the single most powerful, interactive, and seamless way to understand our planet. We believe that global intelligence shouldn't be locked behind boring spreadsheets. It should be at your fingertips.
-            </p>
-            <p className="text-white font-medium text-lg border-l-4 border-blue-500 pl-4 py-2 bg-blue-500/10">
-              "Amazing for knowing the world and exploring the globe. Used by schools across the country for general geography info and advanced geopolitical research."
-            </p>
-            <p>
-              Whether you are a teacher building a lesson plan, a student studying for an exam, or a developer looking for precise demographic data, EarthLookup condenses thousands of data points into one lightning-fast, 3D interactive experience.
-            </p>
-          </div>
-        </section>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <section className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8">
-            <h2 className="text-xl font-bold mb-4 uppercase tracking-wider">The Don Systems Network</h2>
-            <p className="text-gray-400 text-sm mb-6">
-              EarthLookup is proudly maintained by <strong>Don Systems Holding</strong>. We build tools that make the internet faster, safer, and more useful. Check out our sister platforms:
-            </p>
-            <ul className="space-y-3 font-mono text-sm">
-              <li>📍 <a href="https://tellmylocation.com" className="text-blue-400 hover:text-white transition-colors">TellMyLocation.com</a></li>
-              <li>🔊 <a href="https://waterinmyspeaker.com" className="text-blue-400 hover:text-white transition-colors">WaterInMySpeaker.com</a></li>
-              <li>📱 <a href="https://checkthisphone.com" className="text-blue-400 hover:text-white transition-colors">CheckThisPhone.com</a></li>
-            </ul>
-          </section>
-
-          <section className="bg-gradient-to-br from-blue-900/20 to-black border border-blue-500/20 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
-            <h2 className="text-xl font-bold mb-4 uppercase tracking-wider text-white">Keep the Servers Running</h2>
-            <p className="text-gray-400 text-sm mb-6">
-              Maintaining real-time global databases and HD 3D vectors requires massive server power. If EarthLookup helped you out, consider fueling the dev team.
-            </p>
-            <a href="https://buymeacoffee.com/DonShehab" target="_blank" className="bg-[#FFDD00] text-black font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-[0_0_20px_rgba(255,221,0,0.3)] hover:scale-105 transition-transform">
-              Buy Don a Coffee ☕
-            </a>
-          </section>
+        {/* HERO SECTION */}
+        <div className="mb-12 border-b border-white/10 pb-10">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 text-white drop-shadow-2xl uppercase">About The <span className="text-blue-500">Mainframe</span></h1>
+            <p className="text-sm md:text-base text-gray-400 font-light tracking-widest uppercase mb-2">Project Classification: <span className="text-white font-medium">EarthLookup Intelligence Grid</span></p>
+            <p className="text-xs text-blue-400 font-mono tracking-widest uppercase">Architect: Don Odibat / Don Systems Holding</p>
         </div>
 
+        {/* OVERVIEW DOCUMENT (Glass Panel) */}
+        <div className="glass-panel border border-white/5 rounded-3xl p-6 md:p-12 shadow-2xl relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0"></div>
+            
+            <article className="prose prose-invert prose-blue max-w-none text-gray-300 font-light leading-relaxed">
+                
+                <p className="text-xl md:text-2xl font-light leading-relaxed text-white mb-10 border-l-4 border-blue-500 pl-6 py-2">
+                  EarthLookup is not a standard geography website. It is a highly advanced, centralized intelligence terminal designed to bypass fragmented web searches and deliver unfiltered global data in a single, high-density dashboard.
+                </p>
+
+                {/* SECTION 1: GENESIS */}
+                <h2 className="text-2xl font-black text-white uppercase tracking-widest mt-12 mb-6 flex items-center gap-3">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span> Project Genesis
+                </h2>
+                <p>
+                  The modern internet forces researchers, students, and explorers to jump across dozens of platforms to gather basic intelligence about a nation. You check one site for the population, another for the live exchange rate, another to read the history, and yet another to see the local weather. 
+                </p>
+                <p className="mb-8">
+                  EarthLookup was engineered to solve this latency. By syndicating data from the world's most powerful open-source APIs, we created a unified command center. When you select one of the 195 recognized sovereign states, our mainframe decrypts and compiles a comprehensive dossier in less than a second, bringing the planet to your fingertips.
+                </p>
+
+                {/* SECTION 2: CORE SUBSYSTEMS */}
+                <h2 className="text-2xl font-black text-white uppercase tracking-widest mt-12 mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full"></span> Core Subsystems
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div className="bg-black/50 border border-white/5 p-6 rounded-2xl">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <span className="text-blue-500">01.</span> Live Demographics
+                        </h3>
+                        <p className="text-sm text-gray-400">The engine calculates continuous, mathematical estimations of a nation's population based on standardized global birth and death rates, updating directly before your eyes.</p>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 p-6 rounded-2xl">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <span className="text-green-500">02.</span> Macroeconomic Ledger
+                        </h3>
+                        <p className="text-sm text-gray-400">Live integration with global exchange APIs instantly converts any local currency into both USD (Fiat) and BTC (Crypto), allowing for real-time economic assessment.</p>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 p-6 rounded-2xl">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <span className="text-purple-500">03.</span> Atmospheric Tracking
+                        </h3>
+                        <p className="text-sm text-gray-400">By locking onto the precise GPS coordinates of a nation's seat of government, the terminal pulls highly accurate, dual-metric (Celsius/Fahrenheit) temperature and local timezone readings.</p>
+                    </div>
+                    <div className="bg-black/50 border border-white/5 p-6 rounded-2xl">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <span className="text-yellow-500">04.</span> Multilingual Matrix
+                        </h3>
+                        <p className="text-sm text-gray-400">A 7-node translation engine allows operators to flip the entire UI and route direct queries to foreign Wikipedia servers in English, Russian, Dutch, Arabic, Chinese, Hindi, and French.</p>
+                    </div>
+                </div>
+
+                {/* SECTION 3: THE ARCHITECT */}
+                <h2 className="text-2xl font-black text-white uppercase tracking-widest mt-12 mb-6 flex items-center gap-3">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span> Architecture & Operations
+                </h2>
+                <p>
+                  EarthLookup operates as a flagship subsidiary of <strong>Don Systems Holding</strong>, a technology and digital infrastructure firm headquartered in Tupelo, Mississippi, United States. 
+                </p>
+                <p className="mb-8">
+                  Our engineering philosophy is built on speed, data integrity, and uncompromising user interface design. Every line of code, from the 3D WebGL globe on the launch screen to the responsive dual-column intelligence grids, was architected to make heavy data feel completely frictionless.
+                </p>
+
+                <div className="mt-12 text-center border-t border-white/5 pt-8 bg-black/40 rounded-2xl p-8">
+                  <h3 className="text-xl font-black text-white uppercase tracking-widest mb-4">Ready to Access the Mainframe?</h3>
+                  <Link href="/" className="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold tracking-widest uppercase text-xs px-8 py-4 rounded-full transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)]">
+                    Initialize Global Search
+                  </Link>
+                </div>
+
+            </article>
+        </div>
       </main>
 
-      {/* THE MASTER FOOTER WE JUST BUILT */}
-      <TrustFooter />
-      
+      {/* UNIVERSAL FOOTER */}
+      <div className="relative z-20 bg-black/90 border-t border-white/10 backdrop-blur-md mt-10">
+        <TrustFooter />
+      </div>
+
     </div>
   );
 }
