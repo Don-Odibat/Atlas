@@ -156,10 +156,10 @@ export default function CountryHub() {
   const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
   const audioUrl = `/anthems/${formattedAudioSlug}.mp3`;
 
-  // Safe data extraction for deep intel
-  const popDensity = liveData?.area ? (liveData.population / liveData.area).toFixed(1) : "N/A";
-  const giniIndex = liveData?.gini ? Object.values(liveData.gini)[0] : "CLASSIFIED";
-  const drivingSide = liveData?.car?.side ? liveData.car.side.toUpperCase() : "N/A";
+  // 🟢 VERCEL STRICT TYPESCRIPT FIX: Wrapped dynamic objects in String()
+  const popDensity = liveData?.area ? String((liveData.population / liveData.area).toFixed(1)) : "N/A";
+  const giniIndex = liveData?.gini ? String(Object.values(liveData.gini)[0]) : "CLASSIFIED";
+  const drivingSide = liveData?.car?.side ? String(liveData.car.side).toUpperCase() : "N/A";
   const tld = liveData?.tld ? liveData.tld.join(", ") : "N/A";
   const phoneCode = liveData?.idd?.root ? `${liveData.idd.root}${liveData.idd.suffixes?.[0] || ""}` : "N/A";
 
