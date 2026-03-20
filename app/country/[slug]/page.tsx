@@ -5,7 +5,20 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import TrustFooter from "../../../components/TrustFooter";
 
-// 🟢 NEW: Multi-Node Translation Dictionary
+// 🟢 NEW: Custom Anthem Name Database
+const ANTHEM_NAMES: Record<string, string> = {
+  "jordan": "السلام الملكي",
+  "united states": "The Star-Spangled Banner",
+  "united kingdom": "God Save the King",
+  "brazil": "Hino Nacional Brasileiro",
+  "france": "La Marseillaise",
+  "russia": "Государственный гимн Российской Федерации",
+  "china": "义勇军进行曲 (March of the Volunteers)",
+  "india": "Jana Gana Mana",
+  "japan": "Kimi ga Yo",
+  "germany": "Deutschlandlied"
+};
+
 const LANGUAGES = [
   { code: 'EN', label: 'English', flag: '🇺🇸', wiki: 'en', rc: 'eng' },
   { code: 'RU', label: 'Russian', flag: '🇷🇺', wiki: 'ru', rc: 'rus' },
@@ -17,13 +30,13 @@ const LANGUAGES = [
 ];
 
 const translations: Record<string, Record<string, string>> = {
-  EN: { back: "BACK TO GLOBE", map: "MAP", play: "PLAY ANTHEM", pause: "TRANSMITTING...", officialName: "Official Name", native: "Native", insignia: "Official Insignia", people: "The People & Demographics", pop: "Live Population Ticker", density: "Population Density", lang: "Official Languages", demonym: "Demonym (Citizens)", geo: "Geography & Climate", cap: "Seat of Government (Capital)", time: "Local Time", temp: "Live Temp", area: "Total Land Area", region: "Region / Subregion", borders: "Bordering Nations", landlocked: "Landlocked", econ: "Macroeconomics", currency: "Official Currency", fiat: "Live Fiat Market Rate", crypto: "Live Crypto Block Rate", gini: "Gini Coefficient (Wealth Inequality Index)", state: "State & Infrastructure", un: "UN Member", sov: "Sovereignty", drive: "Driving Side", call: "Intl Calling Code", week: "Start of Week", iso: "ISO 3166 Codes", tld: "Top Level Domain", vehicle: "Vehicle Signs", hist: "Declassified Historical Archives", decrypting: "DECRYPTING ARCHIVES FROM GLOBAL MAINFRAME...", uplink: "SECURE UPLINK ESTABLISHED. SHOWING UNREDACTED HISTORY FOR:", adsense: "Google AdSense Zone" },
-  RU: { back: "НАЗАД К ГЛОБУСУ", map: "КАРТА", play: "ИГРАТЬ ГИМН", pause: "ПЕРЕДАЧА...", officialName: "Официальное название", native: "Местное", insignia: "Официальный герб", people: "Люди и демография", pop: "Население в реальном времени", density: "Плотность населения", lang: "Официальные языки", demonym: "Название жителей", geo: "География и климат", cap: "Столица", time: "Местное время", temp: "Температура", area: "Общая площадь", region: "Регион", borders: "Граничащие страны", landlocked: "Нет выхода к морю", econ: "Макроэкономика", currency: "Официальная валюта", fiat: "Курс фиатных денег", crypto: "Курс криптовалюты", gini: "Коэффициент Джини", state: "Государство и инфраструктура", un: "Член ООН", sov: "Суверенитет", drive: "Движение", call: "Международный код", week: "Начало недели", iso: "Коды ISO", tld: "Домен верхнего уровня", vehicle: "Автомобильные коды", hist: "Рассекреченные исторические архивы", decrypting: "РАСШИФРОВКА АРХИВОВ...", uplink: "СВЯЗЬ УСТАНОВЛЕНА. ИСТОРИЯ ДЛЯ:", adsense: "Зона Google AdSense" },
-  NL: { back: "TERUG NAAR WERELDBOL", map: "KAART", play: "SPEEL VOLKSLIED", pause: "VERZENDEN...", officialName: "Officiële Naam", native: "Lokaal", insignia: "Officieel Insigne", people: "Mensen & Demografie", pop: "Live Bevolkingsteller", density: "Bevolkingsdichtheid", lang: "Officiële Talen", demonym: "Inwonersnaam", geo: "Geografie & Klimaat", cap: "Hoofdstad", time: "Lokale Tijd", temp: "Live Temperatuur", area: "Totale Landoppervlakte", region: "Regio", borders: "Aangrenzende Naties", landlocked: "Ingesloten", econ: "Macro-economie", currency: "Officiële Valuta", fiat: "Live Fiat Marktkoers", crypto: "Live Crypto Koers", gini: "Gini-coëfficiënt", state: "Staat & Infrastructuur", un: "VN Lid", sov: "Soevereiniteit", drive: "Rijrichting", call: "Internationaal Belnummer", week: "Start van de Week", iso: "ISO 3166 Codes", tld: "Top Level Domein", vehicle: "Voertuigcodes", hist: "Gededeclassificeerde Historische Archieven", decrypting: "ARCHIEVEN DECODEREN...", uplink: "BEVEILIGDE VERBINDING GEMAAKT. HISTORIE VOOR:", adsense: "Google AdSense Zone" },
-  AR: { back: "العودة إلى الكرة الأرضية", map: "خريطة", play: "تشغيل النشيد", pause: "جارٍ الإرسال...", officialName: "الاسم الرسمي", native: "الاسم المحلي", insignia: "الشارة الرسمية", people: "السكان والديموغرافيا", pop: "تعداد السكان المباشر", density: "الكثافة السكانية", lang: "اللغات الرسمية", demonym: "اسم المواطنين", geo: "الجغرافيا والمناخ", cap: "العاصمة", time: "الوقت المحلي", temp: "درجة الحرارة", area: "المساحة الإجمالية", region: "المنطقة / الإقليم", borders: "الدول المجاورة", landlocked: "غير ساحلي", econ: "الاقتصاد الكلي", currency: "العملة الرسمية", fiat: "سعر الصرف المباشر", crypto: "سعر العملات الرقمية", gini: "مؤشر جيني للثروة", state: "الدولة والبنية التحتية", un: "عضو في الأمم المتحدة", sov: "السيادة", drive: "جهة القيادة", call: "رمز الاتصال الدولي", week: "بداية الأسبوع", iso: "رموز ISO", tld: "نطاق الإنترنت", vehicle: "رموز المركبات", hist: "أرشيف التاريخ السري", decrypting: "جارٍ فك تشفير الأرشيف...", uplink: "تم إنشاء اتصال آمن. عرض التاريخ لـ:", adsense: "منطقة إعلانات جوجل" },
-  ZH: { back: "返回地球仪", map: "地图", play: "播放国歌", pause: "传输中...", officialName: "官方名称", native: "本地名称", insignia: "官方国徽", people: "人口与人口统计", pop: "实时人口统计", density: "人口密度", lang: "官方语言", demonym: "国民称谓", geo: "地理与气候", cap: "首都", time: "当地时间", temp: "实时温度", area: "总土地面积", region: "地区 / 次地区", borders: "接壤国家", landlocked: "内陆国", econ: "宏观经济", currency: "官方货币", fiat: "实时法币汇率", crypto: "实时加密货币汇率", gini: "基尼系数", state: "国家与基础设施", un: "联合国成员", sov: "主权", drive: "驾驶方向", call: "国际区号", week: "每周开始日", iso: "ISO 3166 代码", tld: "顶级域名", vehicle: "车辆标志", hist: "解密历史档案", decrypting: "正在解密全球主机档案...", uplink: "安全连接已建立。未删减历史：", adsense: "Google AdSense 区域" },
-  HI: { back: "ग्लोब पर वापस", map: "नक्शा", play: "राष्ट्रगान बजाएं", pause: "प्रसारण हो रहा है...", officialName: "आधिकारिक नाम", native: "मूल", insignia: "आधिकारिक प्रतीक", people: "लोग और जनसांख्यिकी", pop: "लाइव जनसंख्या", density: "जनसंख्या घनत्व", lang: "आधिकारिक भाषाएं", demonym: "नागरिक", geo: "भूगोल और जलवायु", cap: "राजधानी", time: "स्थानीय समय", temp: "तापमान", area: "कुल भूमि क्षेत्र", region: "क्षेत्र", borders: "पड़ोसी देश", landlocked: "चारों ओर ज़मीन", econ: "अर्थव्यवस्था", currency: "आधिकारिक मुद्रा", fiat: "लाइव फिएट दर", crypto: "लाइव क्रिप्टो दर", gini: "गिनी गुणांक", state: "राज्य और बुनियादी ढांचा", un: "संयुक्त राष्ट्र सदस्य", sov: "संप्रभुता", drive: "ड्राइविंग साइड", call: "कॉलिंग कोड", week: "सप्ताह की शुरुआत", iso: "आईएसओ कोड", tld: "टॉप लेवल डोमेन", vehicle: "वाहन संकेत", hist: "डिक्लासिफाइड ऐतिहासिक पुरालेख", decrypting: "पुरालेख डिक्रिप्ट किए जा रहे हैं...", uplink: "सुरक्षित लिंक स्थापित। इसके लिए इतिहास दिखा रहा है:", adsense: "Google AdSense ज़ोन" },
-  FR: { back: "RETOUR AU GLOBE", map: "CARTE", play: "JOUER L'HYMNE", pause: "TRANSMISSION...", officialName: "Nom Officiel", native: "Nom Local", insignia: "Insigne Officiel", people: "Le Peuple & Démographie", pop: "Compteur de Population en Direct", density: "Densité de Population", lang: "Langues Officielles", demonym: "Citoyens", geo: "Géographie & Climat", cap: "Capitale", time: "Heure Locale", temp: "Température en Direct", area: "Superficie Totale", region: "Région / Sous-région", borders: "Nations Frontalières", landlocked: "Enclavé", econ: "Macroéconomie", currency: "Monnaie Officielle", fiat: "Taux de Marché Fiat en Direct", crypto: "Taux Crypto en Direct", gini: "Coefficient de Gini", state: "État & Infrastructure", un: "Membre de l'ONU", sov: "Souveraineté", drive: "Sens de Conduite", call: "Indicatif Téléphonique", week: "Début de Semaine", iso: "Codes ISO 3166", tld: "Domaine de Premier Niveau", vehicle: "Plaques d'Immatriculation", hist: "Archives Historiques Déclassifiées", decrypting: "DÉCRYPTAGE DES ARCHIVES...", uplink: "LIAISON SÉCURISÉE ÉTABLIE. HISTOIRE POUR :", adsense: "Zone Google AdSense" }
+  EN: { back: "BACK TO GLOBE", map: "MAP", play: "PLAY ANTHEM", pause: "TRANSMITTING...", anthemDefault: "National Anthem", officialName: "Official Name", native: "Native", insignia: "Official Insignia", people: "The People & Demographics", pop: "Live Population Ticker", density: "Population Density", lang: "Official Languages", demonym: "Demonym (Citizens)", geo: "Geography & Climate", cap: "Seat of Government (Capital)", time: "Local Time", temp: "Live Temp", area: "Total Land Area", region: "Region / Subregion", borders: "Bordering Nations", landlocked: "Landlocked", econ: "Macroeconomics", currency: "Official Currency", fiat: "Live Fiat Market Rate", crypto: "Live Crypto Block Rate", gini: "Gini Coefficient (Wealth Inequality Index)", state: "State & Infrastructure", un: "UN Member", sov: "Sovereignty", drive: "Driving Side", call: "Intl Calling Code", week: "Start of Week", iso: "ISO 3166 Codes", tld: "Top Level Domain", vehicle: "Vehicle Signs", hist: "Declassified Historical Archives", decrypting: "DECRYPTING ARCHIVES FROM GLOBAL MAINFRAME...", uplink: "SECURE UPLINK ESTABLISHED. SHOWING UNREDACTED HISTORY FOR:", adsense: "Google AdSense Zone" },
+  RU: { back: "НАЗАД К ГЛОБУСУ", map: "КАРТА", play: "ИГРАТЬ ГИМН", pause: "ПЕРЕДАЧА...", anthemDefault: "Государственный гимн", officialName: "Официальное название", native: "Местное", insignia: "Официальный герб", people: "Люди и демография", pop: "Население в реальном времени", density: "Плотность населения", lang: "Официальные языки", demonym: "Название жителей", geo: "География и климат", cap: "Столица", time: "Местное время", temp: "Температура", area: "Общая площадь", region: "Регион", borders: "Граничащие страны", landlocked: "Нет выхода к морю", econ: "Макроэкономика", currency: "Официальная валюта", fiat: "Курс фиатных денег", crypto: "Курс криптовалюты", gini: "Коэффициент Джини", state: "Государство и инфраструктура", un: "Член ООН", sov: "Суверенитет", drive: "Движение", call: "Международный код", week: "Начало недели", iso: "Коды ISO", tld: "Домен верхнего уровня", vehicle: "Автомобильные коды", hist: "Рассекреченные исторические архивы", decrypting: "РАСШИФРОВКА АРХИВОВ...", uplink: "СВЯЗЬ УСТАНОВЛЕНА. ИСТОРИЯ ДЛЯ:", adsense: "Зона Google AdSense" },
+  NL: { back: "TERUG NAAR WERELDBOL", map: "KAART", play: "SPEEL VOLKSLIED", pause: "VERZENDEN...", anthemDefault: "Volkslied", officialName: "Officiële Naam", native: "Lokaal", insignia: "Officieel Insigne", people: "Mensen & Demografie", pop: "Live Bevolkingsteller", density: "Bevolkingsdichtheid", lang: "Officiële Talen", demonym: "Inwonersnaam", geo: "Geografie & Klimaat", cap: "Hoofdstad", time: "Lokale Tijd", temp: "Live Temperatuur", area: "Totale Landoppervlakte", region: "Regio", borders: "Aangrenzende Naties", landlocked: "Ingesloten", econ: "Macro-economie", currency: "Officiële Valuta", fiat: "Live Fiat Marktkoers", crypto: "Live Crypto Koers", gini: "Gini-coëfficiënt", state: "Staat & Infrastructuur", un: "VN Lid", sov: "Soevereiniteit", drive: "Rijrichting", call: "Internationaal Belnummer", week: "Start van de Week", iso: "ISO 3166 Codes", tld: "Top Level Domein", vehicle: "Voertuigcodes", hist: "Gededeclassificeerde Historische Archieven", decrypting: "ARCHIEVEN DECODEREN...", uplink: "BEVEILIGDE VERBINDING GEMAAKT. HISTORIE VOOR:", adsense: "Google AdSense Zone" },
+  AR: { back: "العودة إلى الكرة الأرضية", map: "خريطة", play: "تشغيل النشيد", pause: "جارٍ الإرسال...", anthemDefault: "النشيد الوطني", officialName: "الاسم الرسمي", native: "الاسم المحلي", insignia: "الشارة الرسمية", people: "السكان والديموغرافيا", pop: "تعداد السكان المباشر", density: "الكثافة السكانية", lang: "اللغات الرسمية", demonym: "اسم المواطنين", geo: "الجغرافيا والمناخ", cap: "العاصمة", time: "الوقت المحلي", temp: "درجة الحرارة", area: "المساحة الإجمالية", region: "المنطقة / الإقليم", borders: "الدول المجاورة", landlocked: "غير ساحلي", econ: "الاقتصاد الكلي", currency: "العملة الرسمية", fiat: "سعر الصرف المباشر", crypto: "سعر العملات الرقمية", gini: "مؤشر جيني للثروة", state: "الدولة والبنية التحتية", un: "عضو في الأمم المتحدة", sov: "السيادة", drive: "جهة القيادة", call: "رمز الاتصال الدولي", week: "بداية الأسبوع", iso: "رموز ISO", tld: "نطاق الإنترنت", vehicle: "رموز المركبات", hist: "أرشيف التاريخ السري", decrypting: "جارٍ فك تشفير الأرشيف...", uplink: "تم إنشاء اتصال آمن. عرض التاريخ لـ:", adsense: "منطقة إعلانات جوجل" },
+  ZH: { back: "返回地球仪", map: "地图", play: "播放国歌", pause: "传输中...", anthemDefault: "国歌", officialName: "官方名称", native: "本地名称", insignia: "官方国徽", people: "人口与人口统计", pop: "实时人口统计", density: "人口密度", lang: "官方语言", demonym: "国民称谓", geo: "地理与气候", cap: "首都", time: "当地时间", temp: "实时温度", area: "总土地面积", region: "地区 / 次地区", borders: "接壤国家", landlocked: "内陆国", econ: "宏观经济", currency: "官方货币", fiat: "实时法币汇率", crypto: "实时加密货币汇率", gini: "基尼系数", state: "国家与基础设施", un: "联合国成员", sov: "主权", drive: "驾驶方向", call: "国际区号", week: "每周开始日", iso: "ISO 3166 代码", tld: "顶级域名", vehicle: "车辆标志", hist: "解密历史档案", decrypting: "正在解密全球主机档案...", uplink: "安全连接已建立。未删减历史：", adsense: "Google AdSense 区域" },
+  HI: { back: "ग्लोब पर वापस", map: "नक्शा", play: "राष्ट्रगान बजाएं", pause: "प्रसारण हो रहा है...", anthemDefault: "राष्ट्रगान", officialName: "आधिकारिक नाम", native: "मूल", insignia: "आधिकारिक प्रतीक", people: "लोग और जनसांख्यिकी", pop: "लाइव जनसंख्या", density: "जनसंख्या घनत्व", lang: "आधिकारिक भाषाएं", demonym: "नागरिक", geo: "भूगोल और जलवायु", cap: "राजधानी", time: "स्थानीय समय", temp: "तापमान", area: "कुल भूमि क्षेत्र", region: "क्षेत्र", borders: "पड़ोसी देश", landlocked: "चारों ओर ज़मीन", econ: "अर्थव्यवस्था", currency: "आधिकारिक मुद्रा", fiat: "लाइव फिएट दर", crypto: "लाइव क्रिप्टो दर", gini: "गिनी गुणांक", state: "राज्य और बुनियादी ढांचा", un: "संयुक्त राष्ट्र सदस्य", sov: "संप्रभुता", drive: "ड्राइविंग साइड", call: "कॉलिंग कोड", week: "सप्ताह की शुरुआत", iso: "आईएसओ कोड", tld: "टॉप लेवल डोमेन", vehicle: "वाहन संकेत", hist: "डिक्लासिफाइड ऐतिहासिक पुरालेख", decrypting: "पुरालेख डिक्रिप्ट किए जा रहे हैं...", uplink: "सुरक्षित लिंक स्थापित। इसके लिए इतिहास दिखा रहा है:", adsense: "Google AdSense ज़ोन" },
+  FR: { back: "RETOUR AU GLOBE", map: "CARTE", play: "JOUER L'HYMNE", pause: "TRANSMISSION...", anthemDefault: "Hymne National", officialName: "Nom Officiel", native: "Nom Local", insignia: "Insigne Officiel", people: "Le Peuple & Démographie", pop: "Compteur de Population en Direct", density: "Densité de Population", lang: "Langues Officielles", demonym: "Citoyens", geo: "Géographie & Climat", cap: "Capitale", time: "Heure Locale", temp: "Température en Direct", area: "Superficie Totale", region: "Région / Sous-région", borders: "Nations Frontalières", landlocked: "Enclavé", econ: "Macroéconomie", currency: "Monnaie Officielle", fiat: "Taux de Marché Fiat en Direct", crypto: "Taux Crypto en Direct", gini: "Coefficient de Gini", state: "État & Infrastructure", un: "Membre de l'ONU", sov: "Souveraineté", drive: "Sens de Conduite", call: "Indicatif Téléphonique", week: "Début de Semaine", iso: "Codes ISO 3166", tld: "Domaine de Premier Niveau", vehicle: "Plaques d'Immatriculation", hist: "Archives Historiques Déclassifiées", decrypting: "DÉCRYPTAGE DES ARCHIVES...", uplink: "LIAISON SÉCURISÉE ÉTABLIE. HISTOIRE POUR :", adsense: "Zone Google AdSense" }
 };
 
 const LiveClock = memo(({ timezones }: { timezones: string[] }) => {
@@ -88,7 +101,6 @@ export default function CountryHub() {
   const params = useParams();
   const rawSlug = decodeURIComponent((params?.slug as string) || "");
   
-  // 🟢 NEW: Language State & Menu
   const [activeLang, setActiveLang] = useState<string>('EN');
   const [langMenuOpen, setLangMenuOpen] = useState<boolean>(false);
   const t = (key: string) => translations[activeLang]?.[key] || translations['EN'][key];
@@ -124,13 +136,11 @@ export default function CountryHub() {
       .catch(() => setIsFetching(false));
   }, [rawSlug]);
 
-  // 🟢 MULTILINGUAL WIKIPEDIA ENGINE
   useEffect(() => {
     if (!liveData?.name?.common) return;
     const fetchHistory = async () => {
       setIsHistoryLoading(true);
       try {
-        // Smart routing: Use translated country name to search foreign Wikipedia
         let wikiName = activeLang === 'EN' ? liveData.name.common : (liveData.translations?.[langConfig.rc]?.common || liveData.name.common);
         if (wikiName.toLowerCase() === "georgia" && activeLang === 'EN') wikiName = "Georgia (country)";
         
@@ -227,6 +237,10 @@ export default function CountryHub() {
   const bgFlagUrl = liveData?.flags?.svg || "https://flagcdn.com/w1280/un.png";
   const languages = liveData?.languages ? Object.values(liveData.languages).join(", ") : "N/A";
   
+  // 🟢 NEW: Extracted Anthem Name Logic
+  const rawCountryName = liveData?.name?.common?.toLowerCase() || "";
+  const currentAnthemName = ANTHEM_NAMES[rawCountryName] || t('anthemDefault');
+
   const popDensity = liveData?.area ? String((liveData.population / liveData.area).toFixed(1)) : "N/A";
   const giniIndex = liveData?.gini ? String(Object.values(liveData.gini)[0]) : "CLASSIFIED";
   const drivingSide = liveData?.car?.side ? String(liveData.car.side).toUpperCase() : "N/A";
@@ -281,7 +295,6 @@ export default function CountryHub() {
         
         <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end relative">
           
-          {/* 🟢 NEW: LANGUAGE SELECTOR DROPDOWN */}
           <div className="relative">
             <button onClick={() => setLangMenuOpen(!langMenuOpen)} className="flex items-center gap-2 border border-gray-700 bg-black/50 px-3 py-2.5 rounded-full hover:bg-white/5 transition-all text-[10px] font-black tracking-widest text-gray-300">
               <span className="text-sm leading-none">{langConfig.flag}</span> {langConfig.code}
@@ -300,12 +313,7 @@ export default function CountryHub() {
           <a href={mapLink} target="_blank" className="text-[10px] font-black tracking-widest text-gray-400 hover:text-white uppercase border border-gray-800 hover:border-white/30 px-4 py-2.5 rounded-full transition-all flex items-center gap-2">
             📍 {t('map')}
           </a>
-          <button onClick={toggleAudio} className={`flex items-center gap-2 border ${isAudioPlaying ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-gray-700 bg-black/50'} px-6 py-2.5 rounded-full hover:bg-white/5 transition-all`}>
-            <div className={`w-2 h-2 rounded-full ${isAudioPlaying ? 'bg-blue-400 animate-ping' : 'bg-gray-500'}`}></div>
-            <span className={`text-[10px] font-black tracking-[0.1em] ${isAudioPlaying ? 'text-blue-400' : 'text-gray-400'}`}>
-              {isAudioPlaying ? t('pause') : t('play')}
-            </span>
-          </button>
+          
         </div>
       </nav>
 
@@ -321,12 +329,27 @@ export default function CountryHub() {
                 </div>
             </div>
             
-            {liveData?.coatOfArms?.svg && (
-                <div className="flex flex-col items-center justify-center glass-panel p-4 rounded-2xl border border-white/5">
-                    <img src={liveData.coatOfArms.svg} alt="Coat of Arms" className="h-24 md:h-32 w-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
-                    <span className="text-[8px] font-black tracking-[0.2em] text-gray-500 mt-3 uppercase">{t('insignia')}</span>
-                </div>
-            )}
+            {/* 🟢 NEW: The State Identity Panel (Insignia + Anthem Button) */}
+            <div className="flex flex-col items-center justify-center glass-panel p-6 rounded-2xl border border-white/5 min-w-[240px]">
+                {liveData?.coatOfArms?.svg ? (
+                    <>
+                        <img src={liveData.coatOfArms.svg} alt="Coat of Arms" className="h-24 md:h-32 w-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] mb-4" />
+                        <span className="text-[8px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase border-b border-white/10 pb-3 w-full text-center">{t('insignia')}</span>
+                    </>
+                ) : (
+                    <span className="text-[8px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase border-b border-white/10 pb-3 w-full text-center">NO INSIGNIA ON FILE</span>
+                )}
+                
+                <button onClick={toggleAudio} className={`flex items-center justify-center gap-2 w-full border ${isAudioPlaying ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-gray-700 bg-black/50'} px-6 py-3 rounded-full hover:bg-white/5 transition-all`}>
+                    <div className={`w-2 h-2 rounded-full ${isAudioPlaying ? 'bg-blue-400 animate-ping' : 'bg-gray-500'}`}></div>
+                    <span className={`text-[10px] font-black tracking-[0.1em] ${isAudioPlaying ? 'text-blue-400' : 'text-gray-400'}`}>
+                        {isAudioPlaying ? t('pause') : t('play')}
+                    </span>
+                </button>
+                <span className="text-[12px] font-black tracking-widest text-blue-400 mt-4 text-center leading-relaxed max-w-[200px]">
+                    {currentAnthemName}
+                </span>
+            </div>
         </div>
 
         <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
