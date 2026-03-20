@@ -113,11 +113,8 @@ export default function CountryHub() {
         
         if (pageId !== "-1" && pages[pageId].extract) {
           let cleanText = pages[pageId].extract;
-          
-          // 🟢 SURGICAL STRIKE: The Regex Blacklist. Cuts the document off the millisecond it hits Wikipedia metadata.
           const metaSections = /\n==\s*(See also|Notes|References|Further reading|External links|Bibliography|Sources)\s*==[\s\S]*/i;
           cleanText = cleanText.replace(metaSections, '');
-          
           setHistoryData(cleanText);
         } else {
           setHistoryData("== RECORDS CLASSIFIED ==\n\nThe historical archives for this region are currently unavailable or classified by the global network.");
@@ -162,10 +159,23 @@ export default function CountryHub() {
       .catch(() => {});
   }, [liveData]);
 
+  const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
+  const audioUrl = `/anthems/${formattedAudioSlug}.mp3`;
+
+  // 🟢 NEW: Mainframe Error Alert to help you find the exact missing file
   const toggleAudio = () => {
     if (!audioRef.current) return;
-    if (isAudioPlaying) { audioRef.current.pause(); setIsAudioPlaying(false); } 
-    else { audioRef.current.play().then(() => setIsAudioPlaying(true)).catch(() => setIsAudioPlaying(false)); }
+    if (isAudioPlaying) { 
+      audioRef.current.pause(); 
+      setIsAudioPlaying(false); 
+    } else { 
+      audioRef.current.play()
+        .then(() => setIsAudioPlaying(true))
+        .catch((e) => {
+          alert(`MAINFRAME ERROR: Anthem not found.\n\nThe system is looking for an exact file named:\n"${formattedAudioSlug}.mp3"\n\nMake sure it is saved exactly like that inside your "public/anthems" folder.`);
+          setIsAudioPlaying(false);
+        }); 
+    }
   };
 
   const renderHistory = () => {
@@ -189,9 +199,6 @@ export default function CountryHub() {
   const bgFlagUrl = liveData?.flags?.svg || "https://flagcdn.com/w1280/un.png";
   const languages = liveData?.languages ? Object.values(liveData.languages).join(", ") : "N/A";
   
-  const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
-  const audioUrl = `/anthems/${formattedAudioSlug}.mp3`;
-
   const popDensity = liveData?.area ? String((liveData.population / liveData.area).toFixed(1)) : "N/A";
   const giniIndex = liveData?.gini ? String(Object.values(liveData.gini)[0]) : "CLASSIFIED";
   const drivingSide = liveData?.car?.side ? String(liveData.car.side).toUpperCase() : "N/A";
@@ -229,12 +236,10 @@ export default function CountryHub() {
         ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
       `}} />
 
-      {/* 🟢 FULL PAGE BACKGROUND FLAG */}
       <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center">
         <div className="w-full h-full animate-breathe mix-blend-screen opacity-50" style={{ backgroundImage: `url(${bgFlagUrl})`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)' }}></div>
       </div>
 
-      {/* 🟢 TOP COMMAND HEADER (Sticky) */}
       <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
             <Link href="/" className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
@@ -259,10 +264,8 @@ export default function CountryHub() {
         </div>
       </nav>
 
-      {/* 🟢 MAIN INTELLIGENCE FEED */}
       <main className="flex-1 w-full max-w-7xl mx-auto relative z-10 px-4 md:px-8 py-10 pb-24">
         
-        {/* HERO SECTION */}
         <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-8 mb-16 border-b border-white/10 pb-10">
             <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
                 <img src={flagUrl} alt="Flag" className="w-32 md:w-48 h-auto rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10" />
@@ -281,7 +284,6 @@ export default function CountryHub() {
             )}
         </div>
 
-        {/* SECTION: LIVE DEMOGRAPHICS & THE PEOPLE */}
         <div className="w-full flex items-center gap-4 mb-6">
             <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">The People & Demographics</h2>
@@ -307,7 +309,6 @@ export default function CountryHub() {
             </div>
         </div>
 
-        {/* SECTION: GEOGRAPHY & CLIMATE */}
         <div className="w-full flex items-center gap-4 mb-6">
             <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Geography & Climate</h2>
@@ -346,7 +347,6 @@ export default function CountryHub() {
             </div>
         </div>
 
-        {/* SECTION: ECONOMICS */}
         <div className="w-full flex items-center gap-4 mb-6">
             <div className="w-1 h-8 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Macroeconomics</h2>
@@ -374,7 +374,6 @@ export default function CountryHub() {
             </div>
         </div>
 
-        {/* SECTION: STATE, TECH & INFRASTRUCTURE */}
         <div className="w-full flex items-center gap-4 mb-12">
             <div className="w-1 h-8 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">State & Infrastructure</h2>
@@ -420,7 +419,6 @@ export default function CountryHub() {
             </div>
         </div>
 
-        {/* 🟢 NEW SECTION: MASSIVE WIKIPEDIA HISTORY INJECTION */}
         <div className="w-full flex items-center gap-4 mb-6 mt-12">
             <div className="w-1 h-8 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Declassified Historical Archives</h2>
@@ -444,7 +442,6 @@ export default function CountryHub() {
             )}
         </div>
 
-        {/* THE ADSENSE ZONE */}
         <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-16 mt-8">
             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
             <span className="text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2">
@@ -455,7 +452,6 @@ export default function CountryHub() {
 
       </main>
 
-      {/* UNIVERSAL FOOTER */}
       <div className="relative z-20 bg-black/90 border-t border-white/10 backdrop-blur-md">
         <TrustFooter />
       </div>
