@@ -23,7 +23,6 @@ export default function GlobalCommandCenter() {
   const globeRef = useRef<any>(null);
   const elementsCache = useRef<Record<string, HTMLElement>>({}); 
 
-  // 🟢 OVERRIDE: Pushed mobile altitude all the way back to 5.5 for a perfect fit
   const getInitialAltitude = (w: number) => (w < 768 ? 5.5 : 2.2);
 
   useEffect(() => {
@@ -45,7 +44,6 @@ export default function GlobalCommandCenter() {
     }
   }, [isZoomedIn, selectedTarget, nations.length]); 
 
-  // 🟢 OVERRIDE: Nuked the sessionStorage memory hijack. It will always load perfectly now.
   useEffect(() => {
     if (globeRef.current && dimensions.width > 0) {
         globeRef.current.pointOfView({ altitude: getInitialAltitude(dimensions.width) }, 0);
@@ -119,7 +117,6 @@ export default function GlobalCommandCenter() {
   };
 
   const navigateToDossier = (slug: string) => {
-      // 🟢 OVERRIDE: Stopped saving the camera zoom to prevent bugs when coming back
       router.push(`/country/${slug}`);
   };
 
@@ -169,7 +166,7 @@ export default function GlobalCommandCenter() {
         .popover-arrow:hover { color: #00f6ff; }
       `}} />
 
-      <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[200] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[150] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
         <div className="bg-black/30 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] pointer-events-auto">
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
@@ -195,22 +192,28 @@ export default function GlobalCommandCenter() {
         <div className="flex gap-4">
           <Link href="/about" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">About</Link>
           <Link href="/contact" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Contact</Link>
-          <Link href="/policy" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Privacy</Link>
+          <Link href="/privacy" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Privacy</Link>
         </div>
         <div className="text-[8px] md:text-[9px] font-mono text-gray-500 font-bold tracking-widest uppercase">
-          2025 all right received Don Odibat - Don Systems Holding
+          2026 all right received Don Odibat - Don Systems Holding
         </div>
       </div>
 
-      <div className="fixed top-8 right-4 md:right-8 z-[100] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
+      {/* 🟢 OVERRIDE: Z-index pushed to 300 to sit above the Welcome Banner */}
+      <div className="fixed top-8 right-4 md:right-8 z-[300] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
         <div className="bg-black/40 border border-white/10 rounded-full flex items-center px-4 backdrop-blur-md shadow-lg pointer-events-auto transition-colors hover:bg-black/60 focus-within:bg-black/80 focus-within:border-blue-500/50">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 min-w-[16px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide text-white" placeholder="Search a country..." value={searchQuery} onChange={(e: any) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setTimeout(() => setIsFocused(false), 200)} onKeyDown={(e: any) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])} />
+          <input type="text" className="w-full bg-transparent border-none py-3 px-3 text-sm focus:outline-none placeholder:text-gray-500 font-medium tracking-wide text-white" placeholder="Search a country..." value={searchQuery} onChange={(e: any) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setTimeout(() => setIsFocused(false), 250)} onKeyDown={(e: any) => e.key === 'Enter' && filteredNations[0] && flyToTarget(filteredNations[0])} />
         </div>
         {searchQuery && isFocused && (
           <div className="mt-2 bg-black/80 border border-white/10 rounded-xl max-h-60 overflow-y-auto backdrop-blur-xl shadow-2xl pointer-events-auto scrollbar-hide">
             {filteredNations.slice(0, 10).map((n: any) => (
-              <button key={n.slug} onClick={() => flyToTarget(n)} className="w-full text-left px-4 py-3 hover:bg-blue-500/20 text-sm flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors">
+              <button 
+                key={n.slug} 
+                // 🟢 OVERRIDE: Changed to onPointerDown so the tap fires instantly before the input blurs
+                onPointerDown={(e: any) => { e.preventDefault(); flyToTarget(n); }} 
+                className="w-full text-left px-4 py-3 hover:bg-blue-500/20 text-sm flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors"
+              >
                 <img src={n.flag} className="w-5 h-auto rounded-sm shadow-sm" alt="" /> 
                 <span className="font-bold text-gray-200 tracking-wide">{n.name}</span>
               </button>
