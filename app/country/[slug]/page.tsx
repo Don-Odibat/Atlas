@@ -160,9 +160,9 @@ export default function CountryHub() {
   }, [liveData]);
 
   const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
-  const audioUrl = `/anthems/${formattedAudioSlug}.mp3`;
+  // 🟢 EXACT FOLDER MATCH: Now pointing to public/audio/anthem/
+  const audioUrl = `/audio/anthem/${formattedAudioSlug}.mp3`;
 
-  // 🟢 NEW: Mainframe Error Alert to help you find the exact missing file
   const toggleAudio = () => {
     if (!audioRef.current) return;
     if (isAudioPlaying) { 
@@ -172,7 +172,7 @@ export default function CountryHub() {
       audioRef.current.play()
         .then(() => setIsAudioPlaying(true))
         .catch((e) => {
-          alert(`MAINFRAME ERROR: Anthem not found.\n\nThe system is looking for an exact file named:\n"${formattedAudioSlug}.mp3"\n\nMake sure it is saved exactly like that inside your "public/anthems" folder.`);
+          alert(`MAINFRAME ERROR: Anthem not found.\n\nThe system is looking for exactly:\n"${formattedAudioSlug}.mp3"\n\nMake sure it is inside your "public/audio/anthem" folder.`);
           setIsAudioPlaying(false);
         }); 
     }
