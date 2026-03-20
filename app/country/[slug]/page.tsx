@@ -74,7 +74,6 @@ export default function CountryHub() {
   const [weather, setWeather] = useState<{ temp: number, wind: number } | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
-  // 🟢 NEW: Wikipedia History State
   const [historyData, setHistoryData] = useState<string>("");
   const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
   
@@ -100,13 +99,12 @@ export default function CountryHub() {
       .catch(() => setIsFetching(false));
   }, [rawSlug]);
 
-  // 🟢 NEW: Fetch Massive 2000+ Word History from Wikipedia API
   useEffect(() => {
     if (!liveData?.name?.common) return;
     const fetchHistory = async () => {
       try {
         let wikiName = liveData.name.common;
-        if (wikiName.toLowerCase() === "georgia") wikiName = "Georgia (country)"; // Smart override for Georgia
+        if (wikiName.toLowerCase() === "georgia") wikiName = "Georgia (country)";
         
         const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles=${encodeURIComponent(wikiName)}&format=json&origin=*&explaintext=true`);
         const data = await res.json();
@@ -114,7 +112,13 @@ export default function CountryHub() {
         const pageId = Object.keys(pages)[0];
         
         if (pageId !== "-1" && pages[pageId].extract) {
-          setHistoryData(pages[pageId].extract);
+          let cleanText = pages[pageId].extract;
+          
+          // 🟢 SURGICAL STRIKE: The Regex Blacklist. Cuts the document off the millisecond it hits Wikipedia metadata.
+          const metaSections = /\n==\s*(See also|Notes|References|Further reading|External links|Bibliography|Sources)\s*==[\s\S]*/i;
+          cleanText = cleanText.replace(metaSections, '');
+          
+          setHistoryData(cleanText);
         } else {
           setHistoryData("== RECORDS CLASSIFIED ==\n\nThe historical archives for this region are currently unavailable or classified by the global network.");
         }
@@ -164,7 +168,6 @@ export default function CountryHub() {
     else { audioRef.current.play().then(() => setIsAudioPlaying(true)).catch(() => setIsAudioPlaying(false)); }
   };
 
-  // 🟢 NEW: Custom parser to turn Wikipedia text into a beautiful CIA Dossier format
   const renderHistory = () => {
     if (!historyData) return null;
     return historyData.split('\n').map((line, idx) => {
@@ -226,12 +229,12 @@ export default function CountryHub() {
         ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
       `}} />
 
-      {/* BACKGROUND FLAG */}
+      {/* 🟢 FULL PAGE BACKGROUND FLAG */}
       <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center">
         <div className="w-full h-full animate-breathe mix-blend-screen opacity-50" style={{ backgroundImage: `url(${bgFlagUrl})`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)' }}></div>
       </div>
 
-      {/* TOP COMMAND HEADER */}
+      {/* 🟢 TOP COMMAND HEADER (Sticky) */}
       <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
             <Link href="/" className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
@@ -256,7 +259,7 @@ export default function CountryHub() {
         </div>
       </nav>
 
-      {/* MAIN INTELLIGENCE FEED */}
+      {/* 🟢 MAIN INTELLIGENCE FEED */}
       <main className="flex-1 w-full max-w-7xl mx-auto relative z-10 px-4 md:px-8 py-10 pb-24">
         
         {/* HERO SECTION */}
