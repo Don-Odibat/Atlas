@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import TrustFooter from "../../../components/TrustFooter";
 
-// 🟢 NEW: Custom Anthem Name Database
 const ANTHEM_NAMES: Record<string, string> = {
   "jordan": "السلام الملكي",
   "united states": "The Star-Spangled Banner",
@@ -39,28 +38,46 @@ const translations: Record<string, Record<string, string>> = {
   FR: { back: "RETOUR AU GLOBE", map: "CARTE", play: "JOUER L'HYMNE", pause: "TRANSMISSION...", anthemDefault: "Hymne National", officialName: "Nom Officiel", native: "Nom Local", insignia: "Insigne Officiel", people: "Le Peuple & Démographie", pop: "Compteur de Population en Direct", density: "Densité de Population", lang: "Langues Officielles", demonym: "Citoyens", geo: "Géographie & Climat", cap: "Capitale", time: "Heure Locale", temp: "Température en Direct", area: "Superficie Totale", region: "Région / Sous-région", borders: "Nations Frontalières", landlocked: "Enclavé", econ: "Macroéconomie", currency: "Monnaie Officielle", fiat: "Taux de Marché Fiat en Direct", crypto: "Taux Crypto en Direct", gini: "Coefficient de Gini", state: "État & Infrastructure", un: "Membre de l'ONU", sov: "Souveraineté", drive: "Sens de Conduite", call: "Indicatif Téléphonique", week: "Début de Semaine", iso: "Codes ISO 3166", tld: "Domaine de Premier Niveau", vehicle: "Plaques d'Immatriculation", hist: "Archives Historiques Déclassifiées", decrypting: "DÉCRYPTAGE DES ARCHIVES...", uplink: "LIAISON SÉCURISÉE ÉTABLIE. HISTOIRE POUR :", adsense: "Zone Google AdSense" }
 };
 
-const LiveClock = memo(({ timezones }: { timezones: string[] }) => {
+// 🟢 MECHANICAL UPGRADE: Hyper-accurate Capital-based ticking clock with DST logic
+const LiveClock = memo(({ fallbackTimezones, resolvedTimezone }: { fallbackTimezones: string[], resolvedTimezone?: string }) => {
   const [localTime, setLocalTime] = useState<string>("CALCULATING...");
+  
   useEffect(() => {
-    if (!timezones || timezones.length === 0) return;
-    const tzString = timezones[0];
-    let offsetHours = 0, offsetMinutes = 0;
-    if (tzString !== "UTC") {
-      const sign = tzString.includes("-") ? -1 : 1;
-      const parts = tzString.replace("UTC", "").replace("+", "").replace("-", "").split(":");
-      offsetHours = parseInt(parts[0]) * sign;
-      if (parts.length > 1) offsetMinutes = parseInt(parts[1]) * sign;
-    }
     const tick = () => {
       const now = new Date();
+      
+      if (resolvedTimezone) {
+        try {
+          setLocalTime(now.toLocaleTimeString('en-US', { timeZone: resolvedTimezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+          return;
+        } catch (e) {}
+      }
+      
+      if (!fallbackTimezones || fallbackTimezones.length === 0) {
+         setLocalTime("N/A");
+         return;
+      }
+      
+      const tzString = fallbackTimezones[0];
+      let offsetHours = 0, offsetMinutes = 0;
+      if (tzString !== "UTC" && tzString !== "UTC+00:00") {
+        const sign = tzString.includes("-") ? -1 : 1;
+        const cleanStr = tzString.replace("UTC", "").replace("+", "").replace("-", "");
+        const parts = cleanStr.split(":");
+        offsetHours = parseInt(parts[0]) * sign;
+        if (parts.length > 1) offsetMinutes = parseInt(parts[1]) * sign;
+      }
+      
       const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
       const countryTime = new Date(utc + (3600000 * offsetHours) + (60000 * offsetMinutes));
       setLocalTime(countryTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
     };
+    
     tick();
     const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [timezones]);
+  }, [fallbackTimezones, resolvedTimezone]);
+  
   return <p className="text-3xl font-black text-white drop-shadow-lg font-mono tracking-tighter">{localTime}</p>;
 });
 
@@ -109,7 +126,10 @@ export default function CountryHub() {
   const [liveData, setLiveData] = useState<any>(null);
   const [isFetching, setIsFetching] = useState(true);
   const [exchangeRates, setExchangeRates] = useState<{ usd: string, btc: string } | null>(null);
-  const [weather, setWeather] = useState<{ temp: number, wind: number } | null>(null);
+  
+  // 🟢 MECHANICAL UPGRADE: Expanded weather state to hold absolute Timezone data
+  const [weather, setWeather] = useState<{ tempC: number, timezone: string } | null>(null);
+  
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [historyData, setHistoryData] = useState<string>("");
   const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
@@ -186,13 +206,23 @@ export default function CountryHub() {
     fetchMarketData();
   }, [liveData]);
 
+  // 🟢 MECHANICAL UPGRADE: Pulling absolute timezone from Capital City GPS coordinates
   useEffect(() => {
-    if (!liveData || !liveData.latlng) return;
-    const [lat, lng] = liveData.latlng;
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
+    if (!liveData) return;
+    const lat = liveData.capitalInfo?.latlng?.[0] || liveData.latlng?.[0];
+    const lng = liveData.capitalInfo?.latlng?.[1] || liveData.latlng?.[1];
+    
+    if (lat === undefined || lng === undefined) return;
+
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&timezone=auto`)
       .then(res => res.json())
       .then(data => {
-        if (data.current_weather) setWeather({ temp: data.current_weather.temperature, wind: data.current_weather.windspeed });
+        if (data.current_weather) {
+            setWeather({ 
+                tempC: data.current_weather.temperature, 
+                timezone: data.timezone 
+            });
+        }
       })
       .catch(() => {});
   }, [liveData]);
@@ -237,11 +267,13 @@ export default function CountryHub() {
   const bgFlagUrl = liveData?.flags?.svg || "https://flagcdn.com/w1280/un.png";
   const languages = liveData?.languages ? Object.values(liveData.languages).join(", ") : "N/A";
   
-  // 🟢 NEW: Extracted Anthem Name Logic
   const rawCountryName = liveData?.name?.common?.toLowerCase() || "";
   const currentAnthemName = ANTHEM_NAMES[rawCountryName] || t('anthemDefault');
 
-  const popDensity = liveData?.area ? String((liveData.population / liveData.area).toFixed(1)) : "N/A";
+  // 🟢 MECHANICAL UPGRADE: Dual-Metric Area & Density calculations
+  const popDensityKm = liveData?.area ? (liveData.population / liveData.area).toFixed(1) : "N/A";
+  const popDensityMi = liveData?.area ? (liveData.population / (liveData.area * 0.386102)).toFixed(1) : "N/A";
+  
   const giniIndex = liveData?.gini ? String(Object.values(liveData.gini)[0]) : "CLASSIFIED";
   const drivingSide = liveData?.car?.side ? String(liveData.car.side).toUpperCase() : "N/A";
   const tld = liveData?.tld ? liveData.tld.join(", ") : "N/A";
@@ -294,7 +326,6 @@ export default function CountryHub() {
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end relative">
-          
           <div className="relative">
             <button onClick={() => setLangMenuOpen(!langMenuOpen)} className="flex items-center gap-2 border border-gray-700 bg-black/50 px-3 py-2.5 rounded-full hover:bg-white/5 transition-all text-[10px] font-black tracking-widest text-gray-300">
               <span className="text-sm leading-none">{langConfig.flag}</span> {langConfig.code}
@@ -309,11 +340,9 @@ export default function CountryHub() {
               </div>
             )}
           </div>
-
           <a href={mapLink} target="_blank" className="text-[10px] font-black tracking-widest text-gray-400 hover:text-white uppercase border border-gray-800 hover:border-white/30 px-4 py-2.5 rounded-full transition-all flex items-center gap-2">
             📍 {t('map')}
           </a>
-          
         </div>
       </nav>
 
@@ -329,7 +358,6 @@ export default function CountryHub() {
                 </div>
             </div>
             
-            {/* 🟢 NEW: The State Identity Panel (Insignia + Anthem Button) */}
             <div className="flex flex-col items-center justify-center glass-panel p-6 rounded-2xl border border-white/5 min-w-[240px]">
                 {liveData?.coatOfArms?.svg ? (
                     <>
@@ -363,9 +391,11 @@ export default function CountryHub() {
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase">{t('pop')}</h3>
                 {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
             </div>
+            {/* 🟢 DUAL-METRIC DENSITY */}
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('density')}</h3>
-                <p className="text-3xl font-black text-white">{popDensity} <span className="text-sm font-light text-gray-400">/ km²</span></p>
+                <p className="text-3xl font-black text-white">{popDensityKm} <span className="text-sm font-light text-gray-400">/ km²</span></p>
+                <p className="text-xs font-mono text-gray-400 mt-1">{popDensityMi} / sq mi</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl lg:col-span-2 flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('lang')}</h3>
@@ -389,16 +419,20 @@ export default function CountryHub() {
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('time')}</h3>
-                {liveData ? <LiveClock timezones={liveData.timezones} /> : <span>...</span>}
+                {liveData ? <LiveClock fallbackTimezones={liveData.timezones} resolvedTimezone={weather?.timezone} /> : <span>...</span>}
             </div>
+            {/* 🟢 DUAL-METRIC TEMP */}
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('temp')}</h3>
-                <p className="text-3xl font-black text-white">{weather ? `${weather.temp}°C` : "..."}</p>
+                <p className="text-3xl font-black text-white">{weather ? `${weather.tempC}°C` : "..."}</p>
+                <p className="text-xs font-mono text-gray-400 mt-1">{weather ? `${Math.round((weather.tempC * 9/5) + 32)}°F` : "..."}</p>
             </div>
             
+            {/* 🟢 DUAL-METRIC AREA */}
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('area')}</h3>
                 <p className="text-2xl font-bold text-white">{liveData ? `${liveData.area.toLocaleString()} km²` : "..."}</p>
+                <p className="text-xs font-mono text-gray-400 mt-1">{liveData ? `${Math.round(liveData.area * 0.386102).toLocaleString()} sq mi` : "..."}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('region')}</h3>
