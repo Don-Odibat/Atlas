@@ -226,7 +226,7 @@ export default function CountryHub() {
       if (text.startsWith('===') && text.endsWith('===')) {
         return <h4 key={idx} className="text-lg font-bold text-white mt-8 mb-2 tracking-wide flex items-center gap-2"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> {text.replace(/===/g, '').trim()}</h4>;
       } else if (text.startsWith('==') && text.endsWith('==')) {
-        return <h3 key={idx} className="text-2xl font-black text-blue-400 uppercase tracking-widest mt-12 mb-6 border-b border-white/10 pb-3">{text.replace(/==/g, '').trim()}</h3>;
+        return <h3 key={idx} className="text-2xl md:text-3xl font-black text-blue-400 uppercase tracking-widest mt-12 mb-6 border-b border-white/10 pb-3">{text.replace(/==/g, '').trim()}</h3>;
       } else {
         return <p key={idx} className="text-gray-300 text-sm md:text-base leading-relaxed mb-4 text-justify">{text}</p>;
       }
@@ -354,18 +354,19 @@ export default function CountryHub() {
             </div>
         </div>
 
-        {/* 🟢 THE 3-COLUMN MATRIX */}
-        <div className={`grid grid-cols-1 xl:grid-cols-12 gap-6 w-full items-start ${activeLang === 'AR' ? 'xl:flex-row-reverse' : ''}`} style={{ direction: activeLang === 'AR' ? 'rtl' : 'ltr' }}>
+        {/* 🟢 THE FLUSH 3-COLUMN MATRIX */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full items-stretch">
             
             {/* 🟢 LEFT FLANK: PEOPLE & GEO (25%) */}
-            <div className="xl:col-span-3 flex flex-col gap-2">
+            <div className="xl:col-span-3 flex flex-col gap-2 h-full">
                 <div className={`w-full flex items-center gap-3 mb-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
                     <div className="w-1 h-6 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
                     <h2 className="text-lg font-black tracking-widest uppercase text-gray-200">{t('people')}</h2>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-black/60 border border-blue-900/30 p-6 rounded-3xl col-span-2 shadow-lg relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full group-hover:bg-blue-500/10 transition-all"></div>
                         <h3 className="text-[9px] font-black tracking-[0.2em] text-gray-500 mb-4 uppercase">{t('pop')}</h3>
                         {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
                     </div>
@@ -389,7 +390,7 @@ export default function CountryHub() {
                     <h2 className="text-lg font-black tracking-widest uppercase text-gray-200">{t('geo')}</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-0">
                     <div className="bg-black/60 border border-white/5 p-5 rounded-3xl col-span-2 flex flex-col justify-center">
                         <h3 className="text-[9px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('cap')}</h3>
                         <p className="text-2xl font-black text-white">{liveData?.capital ? liveData.capital[0] : "N/A"}</p>
@@ -424,18 +425,18 @@ export default function CountryHub() {
                 </div>
             </div>
 
-            {/* 🟢 CENTER COMMAND: HISTORY (50%) */}
-            <div className="xl:col-span-6 flex flex-col shrink-0 sticky top-32 pb-10">
+            {/* 🟢 CENTER COMMAND: HISTORY (50%) - Perfectly stretched & internally scrollable */}
+            <div className="xl:col-span-6 flex flex-col h-full min-h-0">
                 <div className={`w-full flex items-center gap-4 mb-4 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
                     <div className="w-1 h-6 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
                     <h2 className="text-xl font-black tracking-widest uppercase text-gray-200">{t('hist')}</h2>
                 </div>
 
-                <div className={`bg-black/80 border border-yellow-500/30 p-6 md:p-10 rounded-3xl mb-8 relative shadow-[0_0_40px_rgba(234,179,8,0.05)] h-[75vh] overflow-y-auto history-scroll ${activeLang === 'AR' ? 'text-right' : 'text-left'}`}>
+                <div className={`bg-black/80 border border-yellow-500/30 p-6 md:p-10 rounded-3xl mb-0 relative shadow-[0_0_40px_rgba(234,179,8,0.05)] flex-1 overflow-y-auto history-scroll min-h-0 ${activeLang === 'AR' ? 'text-right' : 'text-left'}`}>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
                     
                     {isHistoryLoading ? (
-                       <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest text-center">
+                       <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest text-center h-full">
                           <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                           <p className="animate-pulse">{t('decrypting')}</p>
                        </div>
@@ -451,13 +452,13 @@ export default function CountryHub() {
             </div>
 
             {/* 🟢 RIGHT FLANK: ECON & STATE (25%) */}
-            <div className="xl:col-span-3 flex flex-col gap-2">
+            <div className="xl:col-span-3 flex flex-col gap-2 h-full">
                 <div className={`w-full flex items-center gap-3 mb-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
                     <div className="w-1 h-6 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
                     <h2 className="text-lg font-black tracking-widest uppercase text-gray-200">{t('econ')}</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-black/60 border border-white/5 p-5 rounded-3xl col-span-2 flex flex-col justify-center">
                         <h3 className="text-[9px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('currency')}</h3>
                         <p className="text-2xl font-black text-white">{currencyInfo ? `${currencyInfo.symbol} ${currencyInfo.name}` : "..."}</p>
@@ -484,7 +485,7 @@ export default function CountryHub() {
                     <h2 className="text-lg font-black tracking-widest uppercase text-gray-200">{t('state')}</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-black/60 border border-white/5 p-5 rounded-3xl col-span-1 flex flex-col justify-center">
                         <h3 className="text-[9px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('un')}</h3>
                         <p className={`text-xl font-black ${liveData?.unMember ? 'text-green-400' : 'text-red-400'}`}>{liveData?.unMember ? "VERIFIED" : "UNVERIFIED"}</p>
@@ -524,7 +525,8 @@ export default function CountryHub() {
                     </div>
                 </div>
 
-                <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-8">
+                {/* 🟢 ANCHORED FLUSH TO THE BOTTOM */}
+                <div className="w-full min-h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mt-auto mb-0">
                     <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
                     <span className={`text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
                       <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
@@ -537,7 +539,7 @@ export default function CountryHub() {
 
       </main>
 
-      <div className="relative z-20 bg-black/90 border-t border-white/10 backdrop-blur-md">
+      <div className="relative z-20 bg-black/90 border-t border-white/10 backdrop-blur-md mt-10">
         <TrustFooter />
       </div>
 
