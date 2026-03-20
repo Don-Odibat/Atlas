@@ -74,6 +74,10 @@ export default function CountryHub() {
   const [weather, setWeather] = useState<{ temp: number, wind: number } | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   
+  // 🟢 NEW: Wikipedia History State
+  const [historyData, setHistoryData] = useState<string>("");
+  const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -95,6 +99,33 @@ export default function CountryHub() {
       })
       .catch(() => setIsFetching(false));
   }, [rawSlug]);
+
+  // 🟢 NEW: Fetch Massive 2000+ Word History from Wikipedia API
+  useEffect(() => {
+    if (!liveData?.name?.common) return;
+    const fetchHistory = async () => {
+      try {
+        let wikiName = liveData.name.common;
+        if (wikiName.toLowerCase() === "georgia") wikiName = "Georgia (country)"; // Smart override for Georgia
+        
+        const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles=${encodeURIComponent(wikiName)}&format=json&origin=*&explaintext=true`);
+        const data = await res.json();
+        const pages = data.query.pages;
+        const pageId = Object.keys(pages)[0];
+        
+        if (pageId !== "-1" && pages[pageId].extract) {
+          setHistoryData(pages[pageId].extract);
+        } else {
+          setHistoryData("== RECORDS CLASSIFIED ==\n\nThe historical archives for this region are currently unavailable or classified by the global network.");
+        }
+      } catch (e) {
+        setHistoryData("== UPLINK FAILED ==\n\nFailed to establish a secure connection to the historical mainframe.");
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [liveData]);
 
   useEffect(() => {
     if (!liveData || !liveData.currencies) return;
@@ -133,6 +164,22 @@ export default function CountryHub() {
     else { audioRef.current.play().then(() => setIsAudioPlaying(true)).catch(() => setIsAudioPlaying(false)); }
   };
 
+  // 🟢 NEW: Custom parser to turn Wikipedia text into a beautiful CIA Dossier format
+  const renderHistory = () => {
+    if (!historyData) return null;
+    return historyData.split('\n').map((line, idx) => {
+      const text = line.trim();
+      if (!text) return null;
+      if (text.startsWith('===') && text.endsWith('===')) {
+        return <h4 key={idx} className="text-lg font-bold text-white mt-8 mb-2 tracking-wide flex items-center gap-2"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> {text.replace(/===/g, '').trim()}</h4>;
+      } else if (text.startsWith('==') && text.endsWith('==')) {
+        return <h3 key={idx} className="text-2xl md:text-3xl font-black text-blue-400 uppercase tracking-widest mt-12 mb-6 border-b border-white/10 pb-3">{text.replace(/==/g, '').trim()}</h3>;
+      } else {
+        return <p key={idx} className="text-gray-300 text-sm md:text-base leading-relaxed mb-4 text-justify">{text}</p>;
+      }
+    });
+  };
+
   const currencyCode = liveData?.currencies ? Object.keys(liveData.currencies)[0] : null;
   const currencyInfo = currencyCode ? liveData.currencies[currencyCode] : null;
   const flagUrl = liveData?.flags?.svg || "https://flagcdn.com/w320/un.png";
@@ -163,7 +210,7 @@ export default function CountryHub() {
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black text-white font-sans selection:bg-white/20 relative overflow-x-hidden flex flex-col">
+    <div className="min-h-screen w-screen bg-black text-white font-sans selection:bg-blue-500/30 relative overflow-x-hidden flex flex-col">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       <style dangerouslySetInnerHTML={{__html: `
@@ -179,12 +226,12 @@ export default function CountryHub() {
         ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
       `}} />
 
-      {/* 🟢 FULL PAGE BACKGROUND FLAG */}
+      {/* BACKGROUND FLAG */}
       <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center">
         <div className="w-full h-full animate-breathe mix-blend-screen opacity-50" style={{ backgroundImage: `url(${bgFlagUrl})`, backgroundPosition: 'center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%)' }}></div>
       </div>
 
-      {/* 🟢 TOP COMMAND HEADER (Sticky) */}
+      {/* TOP COMMAND HEADER */}
       <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
             <Link href="/" className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
@@ -209,7 +256,7 @@ export default function CountryHub() {
         </div>
       </nav>
 
-      {/* 🟢 MAIN INTELLIGENCE FEED */}
+      {/* MAIN INTELLIGENCE FEED */}
       <main className="flex-1 w-full max-w-7xl mx-auto relative z-10 px-4 md:px-8 py-10 pb-24">
         
         {/* HERO SECTION */}
@@ -325,7 +372,7 @@ export default function CountryHub() {
         </div>
 
         {/* SECTION: STATE, TECH & INFRASTRUCTURE */}
-        <div className="w-full flex items-center gap-4 mb-6">
+        <div className="w-full flex items-center gap-4 mb-12">
             <div className="w-1 h-8 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">State & Infrastructure</h2>
         </div>
@@ -370,8 +417,32 @@ export default function CountryHub() {
             </div>
         </div>
 
+        {/* 🟢 NEW SECTION: MASSIVE WIKIPEDIA HISTORY INJECTION */}
+        <div className="w-full flex items-center gap-4 mb-6 mt-12">
+            <div className="w-1 h-8 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Declassified Historical Archives</h2>
+        </div>
+
+        <div className="bg-black/80 border border-yellow-500/30 p-6 md:p-12 rounded-3xl mb-16 relative overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.05)]">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
+            
+            {isHistoryLoading ? (
+               <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest">
+                  <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="animate-pulse">DECRYPTING ARCHIVES FROM GLOBAL MAINFRAME...</p>
+               </div>
+            ) : (
+               <article className="prose prose-invert max-w-none">
+                 <p className="text-yellow-500 font-mono text-xs tracking-widest uppercase mb-8 border-b border-yellow-500/20 pb-4">
+                   &gt; SECURE UPLINK ESTABLISHED. SHOWING UNREDACTED HISTORY FOR: {countryName}
+                 </p>
+                 {renderHistory()}
+               </article>
+            )}
+        </div>
+
         {/* THE ADSENSE ZONE */}
-        <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-16">
+        <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-16 mt-8">
             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
             <span className="text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2">
               <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
