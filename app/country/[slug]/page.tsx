@@ -15,7 +15,8 @@ const ANTHEM_NAMES: Record<string, string> = {
   "china": "义勇军进行曲 (March of the Volunteers)",
   "india": "Jana Gana Mana",
   "japan": "Kimi ga Yo",
-  "germany": "Deutschlandlied"
+  "germany": "Deutschlandlied",
+  "greenland": "Nunarput utoqqarsuanngoravit"
 };
 
 const LANGUAGES = [
