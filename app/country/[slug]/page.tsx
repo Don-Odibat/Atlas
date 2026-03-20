@@ -5,6 +5,27 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import TrustFooter from "../../../components/TrustFooter";
 
+// 🟢 NEW: Multi-Node Translation Dictionary
+const LANGUAGES = [
+  { code: 'EN', label: 'English', flag: '🇺🇸', wiki: 'en', rc: 'eng' },
+  { code: 'RU', label: 'Russian', flag: '🇷🇺', wiki: 'ru', rc: 'rus' },
+  { code: 'NL', label: 'Dutch', flag: '🇳🇱', wiki: 'nl', rc: 'nld' },
+  { code: 'AR', label: 'Arabic', flag: '🇦🇪', wiki: 'ar', rc: 'ara' },
+  { code: 'ZH', label: 'Chinese', flag: '🇨🇳', wiki: 'zh', rc: 'zho' },
+  { code: 'HI', label: 'Hindi', flag: '🇮🇳', wiki: 'hi', rc: 'hin' },
+  { code: 'FR', label: 'French', flag: '🇫🇷', wiki: 'fr', rc: 'fra' }
+];
+
+const translations: Record<string, Record<string, string>> = {
+  EN: { back: "BACK TO GLOBE", map: "MAP", play: "PLAY ANTHEM", pause: "TRANSMITTING...", officialName: "Official Name", native: "Native", insignia: "Official Insignia", people: "The People & Demographics", pop: "Live Population Ticker", density: "Population Density", lang: "Official Languages", demonym: "Demonym (Citizens)", geo: "Geography & Climate", cap: "Seat of Government (Capital)", time: "Local Time", temp: "Live Temp", area: "Total Land Area", region: "Region / Subregion", borders: "Bordering Nations", landlocked: "Landlocked", econ: "Macroeconomics", currency: "Official Currency", fiat: "Live Fiat Market Rate", crypto: "Live Crypto Block Rate", gini: "Gini Coefficient (Wealth Inequality Index)", state: "State & Infrastructure", un: "UN Member", sov: "Sovereignty", drive: "Driving Side", call: "Intl Calling Code", week: "Start of Week", iso: "ISO 3166 Codes", tld: "Top Level Domain", vehicle: "Vehicle Signs", hist: "Declassified Historical Archives", decrypting: "DECRYPTING ARCHIVES FROM GLOBAL MAINFRAME...", uplink: "SECURE UPLINK ESTABLISHED. SHOWING UNREDACTED HISTORY FOR:", adsense: "Google AdSense Zone" },
+  RU: { back: "НАЗАД К ГЛОБУСУ", map: "КАРТА", play: "ИГРАТЬ ГИМН", pause: "ПЕРЕДАЧА...", officialName: "Официальное название", native: "Местное", insignia: "Официальный герб", people: "Люди и демография", pop: "Население в реальном времени", density: "Плотность населения", lang: "Официальные языки", demonym: "Название жителей", geo: "География и климат", cap: "Столица", time: "Местное время", temp: "Температура", area: "Общая площадь", region: "Регион", borders: "Граничащие страны", landlocked: "Нет выхода к морю", econ: "Макроэкономика", currency: "Официальная валюта", fiat: "Курс фиатных денег", crypto: "Курс криптовалюты", gini: "Коэффициент Джини", state: "Государство и инфраструктура", un: "Член ООН", sov: "Суверенитет", drive: "Движение", call: "Международный код", week: "Начало недели", iso: "Коды ISO", tld: "Домен верхнего уровня", vehicle: "Автомобильные коды", hist: "Рассекреченные исторические архивы", decrypting: "РАСШИФРОВКА АРХИВОВ...", uplink: "СВЯЗЬ УСТАНОВЛЕНА. ИСТОРИЯ ДЛЯ:", adsense: "Зона Google AdSense" },
+  NL: { back: "TERUG NAAR WERELDBOL", map: "KAART", play: "SPEEL VOLKSLIED", pause: "VERZENDEN...", officialName: "Officiële Naam", native: "Lokaal", insignia: "Officieel Insigne", people: "Mensen & Demografie", pop: "Live Bevolkingsteller", density: "Bevolkingsdichtheid", lang: "Officiële Talen", demonym: "Inwonersnaam", geo: "Geografie & Klimaat", cap: "Hoofdstad", time: "Lokale Tijd", temp: "Live Temperatuur", area: "Totale Landoppervlakte", region: "Regio", borders: "Aangrenzende Naties", landlocked: "Ingesloten", econ: "Macro-economie", currency: "Officiële Valuta", fiat: "Live Fiat Marktkoers", crypto: "Live Crypto Koers", gini: "Gini-coëfficiënt", state: "Staat & Infrastructuur", un: "VN Lid", sov: "Soevereiniteit", drive: "Rijrichting", call: "Internationaal Belnummer", week: "Start van de Week", iso: "ISO 3166 Codes", tld: "Top Level Domein", vehicle: "Voertuigcodes", hist: "Gededeclassificeerde Historische Archieven", decrypting: "ARCHIEVEN DECODEREN...", uplink: "BEVEILIGDE VERBINDING GEMAAKT. HISTORIE VOOR:", adsense: "Google AdSense Zone" },
+  AR: { back: "العودة إلى الكرة الأرضية", map: "خريطة", play: "تشغيل النشيد", pause: "جارٍ الإرسال...", officialName: "الاسم الرسمي", native: "الاسم المحلي", insignia: "الشارة الرسمية", people: "السكان والديموغرافيا", pop: "تعداد السكان المباشر", density: "الكثافة السكانية", lang: "اللغات الرسمية", demonym: "اسم المواطنين", geo: "الجغرافيا والمناخ", cap: "العاصمة", time: "الوقت المحلي", temp: "درجة الحرارة", area: "المساحة الإجمالية", region: "المنطقة / الإقليم", borders: "الدول المجاورة", landlocked: "غير ساحلي", econ: "الاقتصاد الكلي", currency: "العملة الرسمية", fiat: "سعر الصرف المباشر", crypto: "سعر العملات الرقمية", gini: "مؤشر جيني للثروة", state: "الدولة والبنية التحتية", un: "عضو في الأمم المتحدة", sov: "السيادة", drive: "جهة القيادة", call: "رمز الاتصال الدولي", week: "بداية الأسبوع", iso: "رموز ISO", tld: "نطاق الإنترنت", vehicle: "رموز المركبات", hist: "أرشيف التاريخ السري", decrypting: "جارٍ فك تشفير الأرشيف...", uplink: "تم إنشاء اتصال آمن. عرض التاريخ لـ:", adsense: "منطقة إعلانات جوجل" },
+  ZH: { back: "返回地球仪", map: "地图", play: "播放国歌", pause: "传输中...", officialName: "官方名称", native: "本地名称", insignia: "官方国徽", people: "人口与人口统计", pop: "实时人口统计", density: "人口密度", lang: "官方语言", demonym: "国民称谓", geo: "地理与气候", cap: "首都", time: "当地时间", temp: "实时温度", area: "总土地面积", region: "地区 / 次地区", borders: "接壤国家", landlocked: "内陆国", econ: "宏观经济", currency: "官方货币", fiat: "实时法币汇率", crypto: "实时加密货币汇率", gini: "基尼系数", state: "国家与基础设施", un: "联合国成员", sov: "主权", drive: "驾驶方向", call: "国际区号", week: "每周开始日", iso: "ISO 3166 代码", tld: "顶级域名", vehicle: "车辆标志", hist: "解密历史档案", decrypting: "正在解密全球主机档案...", uplink: "安全连接已建立。未删减历史：", adsense: "Google AdSense 区域" },
+  HI: { back: "ग्लोब पर वापस", map: "नक्शा", play: "राष्ट्रगान बजाएं", pause: "प्रसारण हो रहा है...", officialName: "आधिकारिक नाम", native: "मूल", insignia: "आधिकारिक प्रतीक", people: "लोग और जनसांख्यिकी", pop: "लाइव जनसंख्या", density: "जनसंख्या घनत्व", lang: "आधिकारिक भाषाएं", demonym: "नागरिक", geo: "भूगोल और जलवायु", cap: "राजधानी", time: "स्थानीय समय", temp: "तापमान", area: "कुल भूमि क्षेत्र", region: "क्षेत्र", borders: "पड़ोसी देश", landlocked: "चारों ओर ज़मीन", econ: "अर्थव्यवस्था", currency: "आधिकारिक मुद्रा", fiat: "लाइव फिएट दर", crypto: "लाइव क्रिप्टो दर", gini: "गिनी गुणांक", state: "राज्य और बुनियादी ढांचा", un: "संयुक्त राष्ट्र सदस्य", sov: "संप्रभुता", drive: "ड्राइविंग साइड", call: "कॉलिंग कोड", week: "सप्ताह की शुरुआत", iso: "आईएसओ कोड", tld: "टॉप लेवल डोमेन", vehicle: "वाहन संकेत", hist: "डिक्लासिफाइड ऐतिहासिक पुरालेख", decrypting: "पुरालेख डिक्रिप्ट किए जा रहे हैं...", uplink: "सुरक्षित लिंक स्थापित। इसके लिए इतिहास दिखा रहा है:", adsense: "Google AdSense ज़ोन" },
+  FR: { back: "RETOUR AU GLOBE", map: "CARTE", play: "JOUER L'HYMNE", pause: "TRANSMISSION...", officialName: "Nom Officiel", native: "Nom Local", insignia: "Insigne Officiel", people: "Le Peuple & Démographie", pop: "Compteur de Population en Direct", density: "Densité de Population", lang: "Langues Officielles", demonym: "Citoyens", geo: "Géographie & Climat", cap: "Capitale", time: "Heure Locale", temp: "Température en Direct", area: "Superficie Totale", region: "Région / Sous-région", borders: "Nations Frontalières", landlocked: "Enclavé", econ: "Macroéconomie", currency: "Monnaie Officielle", fiat: "Taux de Marché Fiat en Direct", crypto: "Taux Crypto en Direct", gini: "Coefficient de Gini", state: "État & Infrastructure", un: "Membre de l'ONU", sov: "Souveraineté", drive: "Sens de Conduite", call: "Indicatif Téléphonique", week: "Début de Semaine", iso: "Codes ISO 3166", tld: "Domaine de Premier Niveau", vehicle: "Plaques d'Immatriculation", hist: "Archives Historiques Déclassifiées", decrypting: "DÉCRYPTAGE DES ARCHIVES...", uplink: "LIAISON SÉCURISÉE ÉTABLIE. HISTOIRE POUR :", adsense: "Zone Google AdSense" }
+};
+
 const LiveClock = memo(({ timezones }: { timezones: string[] }) => {
   const [localTime, setLocalTime] = useState<string>("CALCULATING...");
   useEffect(() => {
@@ -66,14 +87,18 @@ const LiveDemographics = memo(({ basePopulation }: { basePopulation: number }) =
 export default function CountryHub() {
   const params = useParams();
   const rawSlug = decodeURIComponent((params?.slug as string) || "");
-  const countryName = rawSlug.charAt(0).toUpperCase() + rawSlug.slice(1);
+  
+  // 🟢 NEW: Language State & Menu
+  const [activeLang, setActiveLang] = useState<string>('EN');
+  const [langMenuOpen, setLangMenuOpen] = useState<boolean>(false);
+  const t = (key: string) => translations[activeLang]?.[key] || translations['EN'][key];
+  const langConfig = LANGUAGES.find(l => l.code === activeLang) || LANGUAGES[0];
 
   const [liveData, setLiveData] = useState<any>(null);
   const [isFetching, setIsFetching] = useState(true);
   const [exchangeRates, setExchangeRates] = useState<{ usd: string, btc: string } | null>(null);
   const [weather, setWeather] = useState<{ temp: number, wind: number } | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  
   const [historyData, setHistoryData] = useState<string>("");
   const [isHistoryLoading, setIsHistoryLoading] = useState<boolean>(true);
   
@@ -99,25 +124,28 @@ export default function CountryHub() {
       .catch(() => setIsFetching(false));
   }, [rawSlug]);
 
+  // 🟢 MULTILINGUAL WIKIPEDIA ENGINE
   useEffect(() => {
     if (!liveData?.name?.common) return;
     const fetchHistory = async () => {
+      setIsHistoryLoading(true);
       try {
-        let wikiName = liveData.name.common;
-        if (wikiName.toLowerCase() === "georgia") wikiName = "Georgia (country)";
+        // Smart routing: Use translated country name to search foreign Wikipedia
+        let wikiName = activeLang === 'EN' ? liveData.name.common : (liveData.translations?.[langConfig.rc]?.common || liveData.name.common);
+        if (wikiName.toLowerCase() === "georgia" && activeLang === 'EN') wikiName = "Georgia (country)";
         
-        const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles=${encodeURIComponent(wikiName)}&format=json&origin=*&explaintext=true`);
+        const res = await fetch(`https://${langConfig.wiki}.wikipedia.org/w/api.php?action=query&prop=extracts&titles=${encodeURIComponent(wikiName)}&format=json&origin=*&explaintext=true`);
         const data = await res.json();
         const pages = data.query.pages;
         const pageId = Object.keys(pages)[0];
         
         if (pageId !== "-1" && pages[pageId].extract) {
           let cleanText = pages[pageId].extract;
-          const metaSections = /\n==\s*(See also|Notes|References|Further reading|External links|Bibliography|Sources)\s*==[\s\S]*/i;
+          const metaSections = /\n==\s*(See also|Notes|References|Further reading|External links|Bibliography|Sources|Смотрите также|Примечания|Литература|Ссылки|Zie ook|Externe links|انظر أيضًا|المراجع|参见|参考资料|इन्हें भी देखें|संदर्भ|Voir aussi|Notes et références)\s*==[\s\S]*/i;
           cleanText = cleanText.replace(metaSections, '');
           setHistoryData(cleanText);
         } else {
-          setHistoryData("== RECORDS CLASSIFIED ==\n\nThe historical archives for this region are currently unavailable or classified by the global network.");
+          setHistoryData(`== ${t('hist')} ==\n\n${t('decrypting')}`);
         }
       } catch (e) {
         setHistoryData("== UPLINK FAILED ==\n\nFailed to establish a secure connection to the historical mainframe.");
@@ -126,7 +154,7 @@ export default function CountryHub() {
       }
     };
     fetchHistory();
-  }, [liveData]);
+  }, [liveData, activeLang]);
 
   useEffect(() => {
     if (!liveData || !liveData.currencies) return;
@@ -160,7 +188,6 @@ export default function CountryHub() {
   }, [liveData]);
 
   const formattedAudioSlug = rawSlug.toLowerCase().replace(/\s+/g, '-');
-  // 🟢 EXACT FOLDER MATCH: Now pointing to public/audio/anthem/
   const audioUrl = `/audio/anthem/${formattedAudioSlug}.mp3`;
 
   const toggleAudio = () => {
@@ -193,6 +220,7 @@ export default function CountryHub() {
     });
   };
 
+  const displayCountryName = activeLang === 'EN' ? (rawSlug.charAt(0).toUpperCase() + rawSlug.slice(1)) : (liveData?.translations?.[langConfig.rc]?.common || (rawSlug.charAt(0).toUpperCase() + rawSlug.slice(1)));
   const currencyCode = liveData?.currencies ? Object.keys(liveData.currencies)[0] : null;
   const currencyInfo = currencyCode ? liveData.currencies[currencyCode] : null;
   const flagUrl = liveData?.flags?.svg || "https://flagcdn.com/w320/un.png";
@@ -220,7 +248,7 @@ export default function CountryHub() {
   }
 
   return (
-    <div className="min-h-screen w-screen bg-black text-white font-sans selection:bg-blue-500/30 relative overflow-x-hidden flex flex-col">
+    <div className={`min-h-screen w-screen bg-black text-white font-sans selection:bg-blue-500/30 relative overflow-x-hidden flex flex-col ${activeLang === 'AR' ? 'text-right' : 'text-left'}`} dir={activeLang === 'AR' ? 'rtl' : 'ltr'}>
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       <style dangerouslySetInnerHTML={{__html: `
@@ -242,23 +270,40 @@ export default function CountryHub() {
 
       <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
-            <Link href="/" className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2">
-              <span className="text-blue-500 text-lg">←</span> BACK TO GLOBE
+            <Link href="/" className={`text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
+              <span className="text-blue-500 text-lg">{activeLang === 'AR' ? '→' : '←'}</span> {t('back')}
             </Link>
-            <div className="text-[9px] md:text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2">
+            <div className={`text-[9px] md:text-[10px] font-mono font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
               MAINFRAME SECURED
             </div>
         </div>
         
-        <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-end">
+        <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end relative">
+          
+          {/* 🟢 NEW: LANGUAGE SELECTOR DROPDOWN */}
+          <div className="relative">
+            <button onClick={() => setLangMenuOpen(!langMenuOpen)} className="flex items-center gap-2 border border-gray-700 bg-black/50 px-3 py-2.5 rounded-full hover:bg-white/5 transition-all text-[10px] font-black tracking-widest text-gray-300">
+              <span className="text-sm leading-none">{langConfig.flag}</span> {langConfig.code}
+            </button>
+            {langMenuOpen && (
+              <div className="absolute top-full mt-2 right-0 bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-[100] min-w-[120px]">
+                {LANGUAGES.map(lang => (
+                  <button key={lang.code} onClick={() => { setActiveLang(lang.code); setLangMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-blue-500/20 text-xs font-bold tracking-widest text-gray-300 hover:text-white transition-colors flex items-center gap-3 border-b border-white/5 last:border-0">
+                    <span className="text-lg leading-none">{lang.flag}</span> {lang.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <a href={mapLink} target="_blank" className="text-[10px] font-black tracking-widest text-gray-400 hover:text-white uppercase border border-gray-800 hover:border-white/30 px-4 py-2.5 rounded-full transition-all flex items-center gap-2">
-            📍 MAP
+            📍 {t('map')}
           </a>
           <button onClick={toggleAudio} className={`flex items-center gap-2 border ${isAudioPlaying ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'border-gray-700 bg-black/50'} px-6 py-2.5 rounded-full hover:bg-white/5 transition-all`}>
             <div className={`w-2 h-2 rounded-full ${isAudioPlaying ? 'bg-blue-400 animate-ping' : 'bg-gray-500'}`}></div>
             <span className={`text-[10px] font-black tracking-[0.1em] ${isAudioPlaying ? 'text-blue-400' : 'text-gray-400'}`}>
-              {isAudioPlaying ? "TRANSMITTING..." : "PLAY ANTHEM"}
+              {isAudioPlaying ? t('pause') : t('play')}
             </span>
           </button>
         </div>
@@ -266,176 +311,176 @@ export default function CountryHub() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto relative z-10 px-4 md:px-8 py-10 pb-24">
         
-        <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-8 mb-16 border-b border-white/10 pb-10">
-            <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+        <div className={`flex flex-col md:flex-row items-center md:items-end justify-between gap-8 mb-16 border-b border-white/10 pb-10 ${activeLang === 'AR' ? 'md:flex-row-reverse' : ''}`}>
+            <div className={`flex flex-col md:flex-row items-center gap-6 text-center ${activeLang === 'AR' ? 'md:flex-row-reverse md:text-right' : 'md:text-left'}`}>
                 <img src={flagUrl} alt="Flag" className="w-32 md:w-48 h-auto rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10" />
                 <div>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-2 text-white drop-shadow-2xl uppercase">{countryName}</h1>
-                    <p className="text-sm md:text-base text-gray-400 font-light tracking-widest uppercase mb-1">Official Name: <span className="text-white font-medium">{liveData?.name?.official}</span></p>
-                    <p className="text-xs text-blue-400 font-mono tracking-widest uppercase">Native: {nativeName}</p>
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-2 text-white drop-shadow-2xl uppercase">{displayCountryName}</h1>
+                    <p className="text-sm md:text-base text-gray-400 font-light tracking-widest uppercase mb-1">{t('officialName')}: <span className="text-white font-medium">{liveData?.translations?.[langConfig.rc]?.official || liveData?.name?.official}</span></p>
+                    <p className="text-xs text-blue-400 font-mono tracking-widest uppercase">{t('native')}: {nativeName}</p>
                 </div>
             </div>
             
             {liveData?.coatOfArms?.svg && (
                 <div className="flex flex-col items-center justify-center glass-panel p-4 rounded-2xl border border-white/5">
                     <img src={liveData.coatOfArms.svg} alt="Coat of Arms" className="h-24 md:h-32 w-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
-                    <span className="text-[8px] font-black tracking-[0.2em] text-gray-500 mt-3 uppercase">Official Insignia</span>
+                    <span className="text-[8px] font-black tracking-[0.2em] text-gray-500 mt-3 uppercase">{t('insignia')}</span>
                 </div>
             )}
         </div>
 
-        <div className="w-full flex items-center gap-4 mb-6">
+        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
             <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">The People & Demographics</h2>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('people')}</h2>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
             <div className="bg-black/60 border border-blue-900/30 p-8 rounded-3xl lg:col-span-2 shadow-lg relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full group-hover:bg-blue-500/10 transition-all"></div>
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase">Live Population Ticker</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-6 uppercase">{t('pop')}</h3>
                 {liveData ? <LiveDemographics basePopulation={liveData.population} /> : <span>...</span>}
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Population Density</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('density')}</h3>
                 <p className="text-3xl font-black text-white">{popDensity} <span className="text-sm font-light text-gray-400">/ km²</span></p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl lg:col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Official Languages</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('lang')}</h3>
                 <p className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">{languages}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Demonym (Citizens)</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('demonym')}</h3>
                 <p className="text-lg font-bold text-blue-400 uppercase">{liveData?.demonyms?.eng?.m || "N/A"}</p>
             </div>
         </div>
 
-        <div className="w-full flex items-center gap-4 mb-6">
+        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
             <div className="w-1 h-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Geography & Climate</h2>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('geo')}</h2>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Seat of Government (Capital)</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('cap')}</h3>
                 <p className="text-3xl md:text-4xl font-black text-white">{liveData?.capital ? liveData.capital[0] : "N/A"}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Local Time</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('time')}</h3>
                 {liveData ? <LiveClock timezones={liveData.timezones} /> : <span>...</span>}
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Live Temp</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('temp')}</h3>
                 <p className="text-3xl font-black text-white">{weather ? `${weather.temp}°C` : "..."}</p>
             </div>
             
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Total Land Area</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('area')}</h3>
                 <p className="text-2xl font-bold text-white">{liveData ? `${liveData.area.toLocaleString()} km²` : "..."}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Region / Subregion</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('region')}</h3>
                 <p className="text-xl font-bold text-white">{liveData?.region} <span className="text-gray-400 font-light">/ {liveData?.subregion}</span></p>
             </div>
 
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-3 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Bordering Nations</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('borders')}</h3>
                 <p className="text-sm font-mono text-white leading-relaxed">{liveData?.borders ? liveData.borders.join(", ") : "ISOLATED LANDMASS / ISLAND"}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center items-center text-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Landlocked</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('landlocked')}</h3>
                 <p className={`text-2xl font-black ${liveData?.landlocked ? 'text-red-400' : 'text-blue-400'}`}>{liveData?.landlocked ? "YES" : "NO"}</p>
             </div>
         </div>
 
-        <div className="w-full flex items-center gap-4 mb-6">
+        <div className={`w-full flex items-center gap-4 mb-6 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
             <div className="w-1 h-8 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Macroeconomics</h2>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('econ')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Official Currency</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('currency')}</h3>
                 <p className="text-3xl font-black text-white">{currencyInfo ? `${currencyInfo.symbol} ${currencyInfo.name}` : "..."}</p>
                 <p className="text-sm font-mono text-gray-400 mt-2">CODE: {currencyCode}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-green-500/50">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = USD</h3>
                 <p className="text-4xl font-black text-green-400">${exchangeRates?.usd || "..."}</p>
-                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">Live Fiat Market Rate</p>
+                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('fiat')}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl flex flex-col justify-center border-b-2 border-b-[#F7931A]/50">
                 <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">1 {currencyCode || "Unit"} = BTC</h3>
                 <p className="text-3xl font-black text-[#F7931A]">₿ {exchangeRates?.btc || "..."}</p>
-                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">Live Crypto Block Rate</p>
+                <p className="text-xs text-gray-500 mt-2 font-mono uppercase">{t('crypto')}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 md:col-span-3">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Gini Coefficient (Wealth Inequality Index)</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('gini')}</h3>
                 <p className={`text-2xl font-bold ${giniIndex === "CLASSIFIED" ? 'text-gray-500' : 'text-blue-400'}`}>{giniIndex}</p>
             </div>
         </div>
 
-        <div className="w-full flex items-center gap-4 mb-12">
+        <div className={`w-full flex items-center gap-4 mb-12 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
             <div className="w-1 h-8 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">State & Infrastructure</h2>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('state')}</h2>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">UN Member</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('un')}</h3>
                 <p className={`text-2xl font-black ${liveData?.unMember ? 'text-green-400' : 'text-red-400'}`}>{liveData?.unMember ? "VERIFIED" : "UNVERIFIED"}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 md:col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Sovereignty</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('sov')}</h3>
                 <p className={`text-xl font-black ${liveData?.independent ? 'text-blue-400' : 'text-gray-500'}`}>{liveData?.independent ? "INDEPENDENT" : "DEPENDENT"}</p>
             </div>
-            <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex justify-between items-center">
+            <div className={`bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex justify-between items-center ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
                 <div>
-                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Driving Side</h3>
+                  <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('drive')}</h3>
                   <p className="text-3xl font-bold text-blue-400">{drivingSide}</p>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             </div>
 
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Intl Calling Code</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('call')}</h3>
                 <p className="text-4xl font-mono text-white">+{phoneCode}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Start of Week</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('week')}</h3>
                 <p className="text-4xl font-bold text-white capitalize">{liveData?.startOfWeek || "N/A"}</p>
             </div>
 
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-2 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">ISO 3166 Codes</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('iso')}</h3>
                 <p className="text-2xl font-mono text-white">{liveData?.cca2} / {liveData?.cca3}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Top Level Domain</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('tld')}</h3>
                 <p className="text-2xl font-mono text-blue-400">{tld}</p>
             </div>
             <div className="bg-black/60 border border-white/5 p-6 rounded-3xl col-span-1 flex flex-col justify-center">
-                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">Vehicle Signs</h3>
+                <h3 className="text-[10px] font-black tracking-[0.2em] text-gray-500 mb-2 uppercase">{t('vehicle')}</h3>
                 <p className="text-2xl font-mono text-white">{liveData?.car?.signs ? liveData.car.signs.join(", ") : "N/A"}</p>
             </div>
         </div>
 
-        <div className="w-full flex items-center gap-4 mb-6 mt-12">
+        <div className={`w-full flex items-center gap-4 mb-6 mt-12 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
             <div className="w-1 h-8 bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.8)]"></div>
-            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">Declassified Historical Archives</h2>
+            <h2 className="text-2xl font-black tracking-widest uppercase text-gray-200">{t('hist')}</h2>
         </div>
 
-        <div className="bg-black/80 border border-yellow-500/30 p-6 md:p-12 rounded-3xl mb-16 relative overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.05)]">
+        <div className={`bg-black/80 border border-yellow-500/30 p-6 md:p-12 rounded-3xl mb-16 relative overflow-hidden shadow-[0_0_40px_rgba(234,179,8,0.05)] ${activeLang === 'AR' ? 'text-right' : 'text-left'}`}>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
             
             {isHistoryLoading ? (
-               <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest">
+               <div className="flex flex-col items-center justify-center py-20 gap-4 font-mono text-yellow-500 tracking-widest text-center">
                   <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="animate-pulse">DECRYPTING ARCHIVES FROM GLOBAL MAINFRAME...</p>
+                  <p className="animate-pulse">{t('decrypting')}</p>
                </div>
             ) : (
                <article className="prose prose-invert max-w-none">
                  <p className="text-yellow-500 font-mono text-xs tracking-widest uppercase mb-8 border-b border-yellow-500/20 pb-4">
-                   &gt; SECURE UPLINK ESTABLISHED. SHOWING UNREDACTED HISTORY FOR: {countryName}
+                   &gt; {t('uplink')} {displayCountryName}
                  </p>
                  {renderHistory()}
                </article>
@@ -444,9 +489,9 @@ export default function CountryHub() {
 
         <div className="w-full h-32 bg-black/80 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center relative overflow-hidden mb-16 mt-8">
             <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
-            <span className="text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2">
+            <span className={`text-gray-500 font-mono text-xs uppercase tracking-widest font-bold z-10 flex items-center gap-2 ${activeLang === 'AR' ? 'flex-row-reverse' : ''}`}>
               <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-              Google AdSense Zone
+              {t('adsense')}
             </span>
         </div>
 
