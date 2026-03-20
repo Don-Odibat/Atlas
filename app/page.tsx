@@ -166,7 +166,8 @@ export default function GlobalCommandCenter() {
         .popover-arrow:hover { color: #00f6ff; }
       `}} />
 
-      <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[150] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
+      {/* 🟢 OVERRIDE: Z-index pushed to 400 to sit firmly above the Search Bar */}
+      <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[400] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
         <div className="bg-black/30 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] pointer-events-auto">
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
@@ -199,7 +200,6 @@ export default function GlobalCommandCenter() {
         </div>
       </div>
 
-      {/* 🟢 OVERRIDE: Z-index pushed to 300 to sit above the Welcome Banner */}
       <div className="fixed top-8 right-4 md:right-8 z-[300] w-[calc(100%-2rem)] md:w-full md:max-w-[280px]">
         <div className="bg-black/40 border border-white/10 rounded-full flex items-center px-4 backdrop-blur-md shadow-lg pointer-events-auto transition-colors hover:bg-black/60 focus-within:bg-black/80 focus-within:border-blue-500/50">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 min-w-[16px]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -210,7 +210,6 @@ export default function GlobalCommandCenter() {
             {filteredNations.slice(0, 10).map((n: any) => (
               <button 
                 key={n.slug} 
-                // 🟢 OVERRIDE: Changed to onPointerDown so the tap fires instantly before the input blurs
                 onPointerDown={(e: any) => { e.preventDefault(); flyToTarget(n); }} 
                 className="w-full text-left px-4 py-3 hover:bg-blue-500/20 text-sm flex items-center gap-3 border-b border-white/5 last:border-0 transition-colors"
               >
