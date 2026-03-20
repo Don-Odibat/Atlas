@@ -2,35 +2,53 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import TrustFooter from "../../../components/TrustFooter";
 
-export default function CountryDossier({ params }: { params: { slug: string } }) {
+export default function CountryDossier() {
+  const params = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Re-format the slug to match your downloaded MP3 files (e.g., 'united-states', 'bahamas')
-  const cleanSlug = decodeURIComponent(params.slug).toLowerCase().replace(/\s+/g, '-');
+  // 🟢 BULLETPROOF: Securely extracts the slug and formats it for the audio file
+  const rawSlug = (params?.slug as string) || "";
+  const fetchName = decodeURIComponent(rawSlug);
+  const cleanSlug = fetchName.toLowerCase().replace(/\s+/g, '-');
   const anthemPath = `/anthems/${cleanSlug}.mp3`;
 
   useEffect(() => {
-    // We decode the slug to fetch the exact country name from the API
-    const fetchName = decodeURIComponent(params.slug);
-    
-    fetch(`https://restcountries.com/v3.1/name/${fetchName}?fullText=true`)
+    if (!fetchName) return;
+
+    // 🟢 BULLETPROOF: Encodes spaces (United States -> United%20States) to stop API crashes
+    const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(fetchName)}?fullText=true`;
+
+    fetch(url)
       .then((res) => res.json())
       .then((json) => {
-        if (json && json.length > 0) {
+        if (Array.isArray(json) && json.length > 0) {
           setData(json[0]);
+          setLoading(false);
+        } else {
+          // 🟢 FALLBACK: If strict search fails, run a broad search to ensure we catch the data
+          fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(fetchName)}`)
+            .then(res => res.json())
+            .then(fallbackJson => {
+               if (Array.isArray(fallbackJson) && fallbackJson.length > 0) {
+                  const exact = fallbackJson.find((c: any) => c.name.common.toLowerCase() === fetchName.toLowerCase());
+                  setData(exact || fallbackJson[0]);
+               }
+               setLoading(false);
+            })
+            .catch(() => setLoading(false));
         }
-        setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("API Fetch Error:", err);
         setLoading(false);
       });
-  }, [params.slug]);
+  }, [fetchName]);
 
   const toggleAnthem = () => {
     if (!audioRef.current) return;
@@ -56,14 +74,13 @@ export default function CountryDossier({ params }: { params: { slug: string } })
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-red-500 font-mono tracking-widest uppercase flex-col gap-4">
-        <h2>Target Lost. No Data Found.</h2>
-        <Link href="/" className="text-blue-400 underline text-sm">Return to Global Map</Link>
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-red-500 font-mono tracking-widest uppercase flex-col gap-4 text-center px-6">
+        <h2>Target Lost. No Intelligence Data Found For "{fetchName}".</h2>
+        <Link href="/" className="text-blue-400 underline text-sm mt-4 hover:text-white transition-colors">← Return to Global Command</Link>
       </div>
     );
   }
 
-  // Extracting data safely
   const currencyKeys = data.currencies ? Object.keys(data.currencies) : [];
   const currencyName = currencyKeys.length > 0 ? data.currencies[currencyKeys[0]].name : "N/A";
   const currencySymbol = currencyKeys.length > 0 ? data.currencies[currencyKeys[0]].symbol : "";
@@ -74,10 +91,8 @@ export default function CountryDossier({ params }: { params: { slug: string } })
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col selection:bg-blue-500/30">
       
-      {/* HIDDEN AUDIO ELEMENT */}
       <audio ref={audioRef} src={anthemPath} onEnded={() => setIsPlaying(false)} preload="none" />
 
-      {/* TOP NAVIGATION BANNER */}
       <nav className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-50 px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <Link href="/" className="flex items-center gap-2 text-sm font-black tracking-widest hover:text-blue-400 transition-colors uppercase">
           <span className="text-xl">←</span> BACK TO GLOBE
@@ -88,12 +103,9 @@ export default function CountryDossier({ params }: { params: { slug: string } })
         </div>
       </nav>
 
-      {/* MAIN INTELLIGENCE LAYOUT */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-10 flex flex-col lg:flex-row gap-10">
         
-        {/* LEFT COLUMN: VISUALS & CORE ACTIONS */}
         <aside className="w-full lg:w-1/3 flex flex-col gap-8">
-          
           <div className="bg-[#0a0a0a] border border-blue-900/40 rounded-3xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-all"></div>
             
@@ -113,14 +125,9 @@ export default function CountryDossier({ params }: { params: { slug: string } })
               </div>
             </div>
 
-            {/* ANTHEM & MAPS BUTTONS */}
             <div className="flex flex-col gap-3">
               <button onClick={toggleAnthem} className={`w-full font-black uppercase tracking-widest py-4 rounded-xl flex items-center justify-center gap-3 transition-all border ${isPlaying ? 'bg-blue-500/20 text-blue-400 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white/5 text-white border-white/10 hover:bg-white/10'}`}>
-                {isPlaying ? (
-                   <>⏸ PAUSE ANTHEM</>
-                ) : (
-                   <>▶ PLAY ANTHEM</>
-                )}
+                {isPlaying ? <>⏸ PAUSE ANTHEM</> : <>▶ PLAY ANTHEM</>}
               </button>
               <a href={mapLink} target="_blank" className="w-full bg-[#0a0a0a] text-gray-300 font-bold uppercase tracking-widest py-3 rounded-xl flex items-center justify-center gap-3 border border-white/10 hover:border-blue-500/50 hover:text-white transition-all text-sm">
                 📍 OPEN IN GOOGLE MAPS
@@ -128,22 +135,17 @@ export default function CountryDossier({ params }: { params: { slug: string } })
             </div>
           </div>
 
-          {/* COAT OF ARMS (If it exists) */}
           {data.coatOfArms && data.coatOfArms.svg && (
              <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg">
                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Official Insignia</h3>
                <img src={data.coatOfArms.svg} alt={`Coat of Arms of ${data.name.common}`} className="w-32 h-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
              </div>
           )}
-
         </aside>
 
-        {/* RIGHT COLUMN: INTELLIGENCE GRID */}
         <section className="w-full lg:w-2/3 flex flex-col gap-8">
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* DEMOGRAPHICS */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -153,7 +155,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
               <div className="text-sm text-gray-400 mt-1">Total Population</div>
             </div>
 
-            {/* CAPITAL */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
@@ -163,7 +164,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
               <div className="text-sm text-gray-400 mt-1">Capital City</div>
             </div>
 
-            {/* ECONOMICS */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -173,7 +173,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
               <div className="text-sm text-gray-400 mt-1">Official Currency</div>
             </div>
 
-            {/* GEOGRAPHY */}
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-colors">
               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
@@ -182,7 +181,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
               <div className="text-2xl font-bold">{new Intl.NumberFormat().format(data.area || 0)} <span className="text-sm text-gray-400">km²</span></div>
               <div className="text-sm text-gray-400 mt-1">Total Square Kilometers</div>
             </div>
-            
           </div>
 
           <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg">
@@ -208,7 +206,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
              </div>
           </div>
 
-          {/* THE ADSENSE ZONE */}
           <div className="w-full h-32 md:h-24 bg-black border-2 border-dashed border-white/20 rounded-xl flex items-center justify-center relative overflow-hidden">
              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay"></div>
              <span className="text-gray-600 font-mono text-xs uppercase tracking-widest font-bold z-10">Google AdSense Zone</span>
@@ -217,7 +214,6 @@ export default function CountryDossier({ params }: { params: { slug: string } })
         </section>
       </main>
 
-      {/* UNIVERSAL FOOTER */}
       <TrustFooter />
       
     </div>
