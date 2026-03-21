@@ -1,31 +1,33 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Script from "next/script"; // Next.js optimized script loader
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "EarthLookup | Intelligence OS",
-  description: "The Ultimate Global Encyclopedia and Geopolitical Mainframe.",
+  title: "EarthLookup | Global Intelligence Terminal",
+  description: "A centralized geographic, demographic, and macroeconomic intelligence terminal. Access live fiat/crypto rates, population pulses, and declassified historical archives for all 195 sovereign states.",
+  keywords: "geography, global data, population tracker, live exchange rates, fiat, crypto, demographics, EarthLookup",
+  authors: [{ name: "Don Systems Holding" }],
+  openGraph: {
+    title: "EarthLookup | Global Intelligence Terminal",
+    description: "Access live global demographics, macroeconomic ledgers, and geographic intelligence in a single high-density dashboard.",
+    type: "website",
+  }
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
       <head>
-        {/* 🟢 DON SYSTEMS: GOOGLE ADSENSE VERIFICATION SCRIPT */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5129097020907805"
-          crossOrigin="anonymous"
-          strategy="afterInteractive" // Loads after the UI so the globe stays fast
-        />
+        {/* GOOGLE ADSENSE UPLINK (Uncomment and add your Client ID when approved) */}
+        {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossOrigin="anonymous"></script> */}
       </head>
-      <body className="bg-black text-white antialiased">
-        {children}
-      </body>
+      <body className={`${inter.className} bg-black`}>{children}</body>
     </html>
   );
 }
