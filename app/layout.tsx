@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     title: "EarthLookup | Global Intelligence Terminal",
     description: "Access live global demographics, macroeconomic ledgers, and geographic intelligence in a single high-density dashboard.",
     type: "website",
+  },
+  verification: {
+    google: "YznLD54o7VrTHE9GNtpVAjlPMPEsU3VIFzRfIZeGjDQ",
   }
 };
 
