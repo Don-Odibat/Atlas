@@ -16,7 +16,12 @@ const ANTHEM_NAMES: Record<string, string> = {
   "india": "Jana Gana Mana",
   "japan": "Kimi ga Yo",
   "germany": "Deutschlandlied",
-  "greenland": "Nunarput utoqqarsuanngoravit"
+  "greenland": "Nunarput utoqqarsuanngoravit",
+  "dr congo": "Debout Congolais",
+  "republic of the congo": "La Congolaise",
+  "cape verde": "Cântico da Liberdade",
+  "western sahara": "Yabaniy Djabal",
+  "saint helena, ascension and tristan da cunha": "God Save the King"
 };
 
 const LANGUAGES = [
