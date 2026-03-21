@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -30,7 +31,26 @@ export default function RootLayout({
         {/* GOOGLE ADSENSE UPLINK (Uncomment and add your Client ID when approved) */}
         {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossOrigin="anonymous"></script> */}
       </head>
-      <body className={`${inter.className} bg-black`}>{children}</body>
+      <body className={`${inter.className} bg-black`}>
+        {children}
+
+        {/* 🟢 GOOGLE ANALYTICS SURVEILLANCE BEACON */}
+        <Script strategy="afterInteractive" src="https://www.googletagmanager.com/gtag/js?id=G-S9JQ20EPS1" />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-S9JQ20EPS1', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
+      </body>
     </html>
   );
 }
