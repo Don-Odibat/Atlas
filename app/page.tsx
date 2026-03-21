@@ -166,7 +166,6 @@ export default function GlobalCommandCenter() {
         .popover-arrow:hover { color: #00f6ff; }
       `}} />
 
-      {/* 🟢 OVERRIDE: Z-index pushed to 400 to sit firmly above the Search Bar */}
       <div className={`fixed top-8 md:top-12 left-1/2 -translate-x-1/2 z-[400] max-w-2xl w-[92%] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${showBanner ? 'translate-y-0 opacity-100' : '-translate-y-32 opacity-0 pointer-events-none'}`}>
         <div className="bg-black/30 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] pointer-events-auto">
           <div className="flex justify-between items-start mb-3">
@@ -189,10 +188,12 @@ export default function GlobalCommandCenter() {
         <h2 className="text-[8px] font-bold tracking-[0.2em] text-gray-400 uppercase mt-1">Ultimate Geography Encyclopedia</h2>
       </div>
 
+      {/* 🟢 THE UPDATED FLOATING FOOTER (Now includes FAQ) */}
       <div className="fixed bottom-8 left-4 md:left-8 z-[100] flex flex-col gap-2 bg-black/40 border border-white/10 p-4 md:p-5 rounded-xl backdrop-blur-md shadow-2xl pointer-events-auto">
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <Link href="/about" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">About</Link>
           <Link href="/contact" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Contact</Link>
+          <Link href="/faq" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">FAQ</Link>
           <Link href="/privacy" className="text-[9px] md:text-[10px] font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors">Privacy</Link>
         </div>
         <div className="text-[8px] md:text-[9px] font-mono text-gray-500 font-bold tracking-widest uppercase">
